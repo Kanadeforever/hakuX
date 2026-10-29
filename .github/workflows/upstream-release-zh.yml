@@ -3,7 +3,7 @@ name: hakuX 上游正式版简体中文发行
 on:
   # 每天北京时间 11:17 检查上游最新正式 Release。
   schedule:
-    - cron: "17 3 * * *"
+    - cron: "00 3 * * *"
   workflow_dispatch:
 
 permissions:
@@ -439,6 +439,39 @@ jobs:
           cd "$SRC_DIR"
           # 上游脚本可能使用 CRLF；先统一为 LF，避免回车字符被 Bash 当作 set 选项的一部分。
           sed -i 's/\r$//' tools/native/app-libs.sh
+
+          # 上游脚本可能固定使用 Windows 开发机的 NDK 路径；CI 必须改用当前 Linux Runner 的 NDK。
+          export ANDROID_NDK_HOME="${ANDROID_HOME}/ndk/29.0.14206865"
+          strip_tool="${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip"
+          if [[ ! -x "$strip_tool" ]]; then
+            echo "::error::当前 Linux NDK 中找不到可执行的 llvm-strip：$strip_tool"
+            exit 1
+          fi
+
+          # 将上游脚本中的旧 NDK 绝对路径替换为环境变量，并将 Windows 工具链目录改为 Linux 目录。
+          python3 - <<'PY_PATCH'
+          from pathlib import Path
+          import re
+
+          script = Path("tools/native/app-libs.sh")
+          content = script.read_text(encoding="utf-8-sig")
+          content = content.replace("\r\n", "\n").replace("\r", "\n")
+          content = re.sub(
+              r"(?:/usr/local/lib/android/sdk|\$\{?ANDROID_HOME\}?)/ndk/27\.3\.13750724",
+              "${ANDROID_NDK_HOME}",
+              content,
+          )
+          # 若脚本仅记录旧版号而未写完整 SDK 路径，也将其改为当前 Runner 安装的 NDK 版本。
+          content = content.replace("27.3.13750724", "29.0.14206865")
+          content = content.replace("windows-x86_64", "linux-x86_64")
+
+          if "windows-x86_64" in content or "27.3.13750724" in content:
+              raise SystemExit("app-libs.sh 仍包含 Windows NDK 路径或旧 NDK 版本，拒绝继续执行。")
+          if "llvm-strip" not in content:
+              raise SystemExit("无法在 app-libs.sh 中确认 llvm-strip 调用，拒绝应用不确定的路径修复。")
+          script.write_text(content, encoding="utf-8", newline="\n")
+          PY_PATCH
+
           bash tools/native/app-libs.sh
 
       - name: 编译并验证 APK
