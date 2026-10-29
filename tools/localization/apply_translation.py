@@ -132,6 +132,59 @@ def read_default_strings(path):
     return values
 
 
+def contains_english_text(value):
+    """筛选包含英文字母的文本，避免把纯数字或标点误报为待翻译内容。"""
+    return bool(value and re.search(r"[A-Za-z]", value))
+
+
+def format_report_text(value):
+    """把换行和反引号转义成单行文本，避免报告中的代码格式被破坏。"""
+    return value.replace("\r", "\\r").replace("\n", "\\n").replace("`", "'")
+
+
+def collect_untranslated_compose(root, app_main, translations):
+    """扫描 Compose 的静态 Text 与 contentDescription，收集字典未覆盖的英文候选。"""
+    candidates = set()
+
+    # 只扫描源码中能静态读取的字面量；动态插值和拼接文本不在此范围内。
+    for path in sorted(app_main.rglob("*.kt")):
+        original = path.read_text(encoding="utf-8")
+        relative_path = path.relative_to(root).as_posix()
+
+        # Text 文本和无障碍描述是两种常见的直接显示文本入口。
+        for pattern in (TEXT_LITERAL_PATTERN, DESCRIPTION_PATTERN):
+            for match in pattern.finditer(original):
+                value = decode_kotlin_literal(match.group("literal"))
+                if value is None or value in translations:
+                    continue
+                if contains_english_text(value):
+                    candidates.add((relative_path, value))
+
+    return sorted(candidates)
+
+
+def collect_untranslated_resources(default_strings, zh_strings, translations):
+    """找出默认 Android 字符串中既没有字典译文、也没有现成中文覆盖的英文候选。"""
+    candidates = []
+
+    for name, value in default_strings.items():
+        # 应用名称是产品标识，且会由 app_name 单独处理，不作为普通 UI 词条报告。
+        if name == "app_name":
+            continue
+
+        # 字典已提供译文时由正常汉化流程处理；已有不同的中文值也视为已翻译。
+        if value in translations:
+            continue
+        existing_zh = zh_strings.get(name)
+        if existing_zh and existing_zh != value:
+            continue
+
+        if contains_english_text(value):
+            candidates.append((name, value))
+
+    return sorted(candidates)
+
+
 def register_locale(root):
     """登记 zh-CN 系统应用语言，并在主清单中引用语言配置。"""
     app_res = root / "android/app/src/main/res"
@@ -224,6 +277,9 @@ def main():
     changed_files = []
     replacement_count = 0
 
+    # 在源码被改写前扫描未覆盖的静态文案，报告可见英文但不阻止部分汉化发行。
+    untranslated_compose = collect_untranslated_compose(root, app_main, translations)
+
     kotlin_files = sorted(app_main.rglob("*.kt"))
     for path in kotlin_files:
         original = path.read_text(encoding="utf-8")
@@ -259,13 +315,20 @@ def main():
             write_crlf(path, content)
             changed_files.append(str(path.relative_to(root)))
 
-    # 将原本已经使用 Android 资源的界面文字也纳入首版翻译。
+    # 将原本已经使用 Android 资源的界面文字也纳入汉化与审查。
     base_file = app_main / "res/values/strings.xml"
+    zh_file = app_main / "res/values-zh-rCN/strings.xml"
     default_strings = read_default_strings(base_file)
+    existing_zh_strings = read_default_strings(zh_file)
     existing_resource_translations = {}
     for key, value in default_strings.items():
         if value in translations:
             existing_resource_translations[key] = translations[value]
+
+    # 默认资源中没有字典译文、也没有现成中文覆盖的英文字符串需要人工检查。
+    untranslated_resources = collect_untranslated_resources(
+        default_strings, existing_zh_strings, translations
+    )
 
     base_updates = {}
     zh_updates = dict(existing_resource_translations)
@@ -280,7 +343,6 @@ def main():
     zh_updates["app_name"] = app_name.get("zh-CN", "hakuX 简体中文版")
 
     merge_strings_xml(base_file, base_updates, overwrite=False)
-    zh_file = app_main / "res/values-zh-rCN/strings.xml"
     merge_strings_xml(zh_file, zh_updates, overwrite=True)
 
     register_locale(root)
@@ -297,14 +359,40 @@ def main():
         f"- 命中的原有字符串资源：{len(existing_resource_translations)} 项",
         f"- 修改的 Kotlin 文件：{len(changed_files)} 个",
         f"- 词条字典总数：{len(translations)} 项",
-        f"- 本次未匹配的词条：{len(unused)} 项",
+        f"- 字典中未匹配上游的词条：{len(unused)} 项",
+        f"- Compose 未翻译静态文案候选：{len(untranslated_compose)} 项",
+        f"- Android 未翻译字符串资源候选：{len(untranslated_resources)} 项",
+        "",
+        "> 未翻译候选仅供人工审查，不会阻止本次发行。报告范围是可静态识别的 Compose 文案和默认 Android 简单字符串资源；动态拼接、运行时生成、原生 C/C++、自定义绘制等文本不在自动扫描范围内。",
         "",
         "## 本次修改的 Kotlin 文件",
         "",
     ]
     report_lines.extend(f"- `{name}`" for name in changed_files)
-    report_lines.extend(["", "## 未匹配词条（仅供后续补译）", ""])
-    report_lines.extend(f"- `{value}`" for value in unused)
+
+    report_lines.extend(["", "## 未翻译的 Compose 静态界面文案候选", ""])
+    if untranslated_compose:
+        report_lines.extend(
+            f"- `{path}`：`{format_report_text(value)}`"
+            for path, value in untranslated_compose
+        )
+    else:
+        report_lines.append("- 未发现符合扫描条件的候选文本。")
+
+    report_lines.extend(["", "## 未翻译的 Android 字符串资源候选", ""])
+    if untranslated_resources:
+        report_lines.extend(
+            f"- `{name}`：`{format_report_text(value)}`"
+            for name, value in untranslated_resources
+        )
+    else:
+        report_lines.append("- 未发现符合扫描条件的候选资源。")
+
+    report_lines.extend(["", "## 字典中未匹配到上游的词条", ""])
+    if unused:
+        report_lines.extend(f"- `{value}`" for value in unused)
+    else:
+        report_lines.append("- 全部字典词条均已匹配到上游源码或默认资源。")
 
     report_path.parent.mkdir(parents=True, exist_ok=True)
     write_crlf(report_path, "\n".join(report_lines) + "\n")
@@ -312,6 +400,8 @@ def main():
     print(f"已处理 Compose 文案：{len(matched_literals)} 项")
     print(f"已处理既有资源：{len(existing_resource_translations)} 项")
     print(f"已修改 Kotlin 文件：{len(changed_files)} 个")
+    print(f"Compose 未翻译候选：{len(untranslated_compose)} 项")
+    print(f"Android 资源未翻译候选：{len(untranslated_resources)} 项")
     print(f"翻译审查报告：{report_path}")
 
     # 如果没有任何界面文字命中，不允许继续发布纯英文版本。
