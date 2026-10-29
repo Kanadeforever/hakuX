@@ -299,6 +299,19 @@ jobs:
             "$SDL3_REF" "$NC_DEPS/SDL3"
           clone_at https://github.com/bylaws/libadrenotools.git \
             "$ADRENOTOOLS_REF" "$NC_DEPS/adrenotools"
+
+          # adrenotools 将 linkernsbypass 作为 Git 子模块管理。
+          # 普通克隆只取得主仓库，不会自动填充子模块；必须按固定提交初始化递归子模块。
+          git -C "$NC_DEPS/adrenotools" submodule sync --recursive
+          git -C "$NC_DEPS/adrenotools" submodule update --init --recursive
+
+          # 在进入 CMake 前验证关键子模块完整，避免把缺失源码误判为编译器故障。
+          if [[ ! -f "$NC_DEPS/adrenotools/lib/linkernsbypass/CMakeLists.txt" ]]; then
+            echo "::error::adrenotools 的 linkernsbypass 子模块未正确检出，缺少 CMakeLists.txt。"
+            git -C "$NC_DEPS/adrenotools" submodule status --recursive || true
+            exit 1
+          fi
+
           clone_nv2a_or_archive https://github.com/xemu-project/nv2a_vsh_cpu.git \
             "$NV2A_VSH_CPU_REF" "$NC_DEPS/root/subprojects/nv2a_vsh_cpu"
 
