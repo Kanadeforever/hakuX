@@ -3,7 +3,7 @@ name: hakuX 上游正式版简体中文发行
 on:
   # 每天北京时间 11:17 检查上游最新正式 Release。
   schedule:
-    - cron: "00 3 * * *"
+    - cron: "17 3 * * *"
   workflow_dispatch:
 
 permissions:
@@ -473,6 +473,44 @@ jobs:
           PY_PATCH
 
           bash tools/native/app-libs.sh
+
+      - name: 清除上游固定的 Java 安装路径
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # 上游 gradle.properties 可能写死某台开发机的 Java 路径。
+          # GitHub Runner 由 setup-java 提供 JAVA_HOME，因此移除该覆盖项，
+          # 让 Gradle 使用当前 Runner 实际安装的 JDK 21。
+          python3 - "$SRC_DIR" "$HOME/.gradle/gradle.properties" <<'PY_GRADLE_HOME'
+          from pathlib import Path
+          import re
+          import sys
+
+          source_root = Path(sys.argv[1])
+          user_properties = Path(sys.argv[2])
+          candidates = set(source_root.rglob("gradle.properties"))
+          if user_properties.is_file():
+              candidates.add(user_properties)
+
+          pattern = re.compile(r"(?im)^\s*org\.gradle\.java\.home\s*=.*(?:\r?\n|$)")
+          removed = 0
+
+          for path in sorted(candidates):
+              original = path.read_text(encoding="utf-8-sig")
+              updated, count = pattern.subn("", original)
+              if count:
+                  path.write_text(updated, encoding="utf-8", newline="\n")
+                  removed += count
+                  print(f"已移除固定 Java 路径：{path}")
+
+          print(f"共移除 {removed} 条 org.gradle.java.home 配置。")
+          PY_GRADLE_HOME
+
+          # 明确验证 setup-java 提供的 JDK 可用，避免继续使用失效路径。
+          echo "JAVA_HOME=$JAVA_HOME"
+          test -x "$JAVA_HOME/bin/java"
+          java -version
 
       - name: 编译并验证 APK
         shell: bash
