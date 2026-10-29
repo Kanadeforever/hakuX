@@ -1,9 +1,9 @@
 name: hakuX 上游正式版简体中文发行
 
 on:
-  # 每天北京时间 11:17 检查上游最新正式 Release。
+  # 每天 UTC+0 03:17 检查上游最新正式 Release（对应北京时间 11:17）。
   schedule:
-    - cron: "0 4 * * *"
+    - cron: "00 4 * * *"
   workflow_dispatch:
 
 permissions:
@@ -77,7 +77,7 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update
-          sudo apt-get install -y git jq ninja-build rsync python3 unzip zip
+          sudo apt-get install -y git jq ninja-build python3 unzip zip
 
       - name: 配置 JDK 21
         uses: actions/setup-java@v4
@@ -117,8 +117,6 @@ jobs:
           git clone --depth 1 --branch "$UPSTREAM_TAG" \
             https://github.com/rfandango/hakuX.git "$SRC_DIR"
 
-          echo "upstream_commit=$(git -C "$SRC_DIR" rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-
           # 初始化原生核心所需的 FEX 子模块及嵌套子模块。
           git -C "$SRC_DIR" submodule update --init external/fex
           git -C "$SRC_DIR/external/fex" submodule update --init \
@@ -129,22 +127,34 @@ jobs:
             External/xxhash \
             Source/Common/cpp-optparse
 
-      - name: 生成首版汉化资源并修改界面文案
+      - name: 导入资源 ID 翻译并检查上游文案变化
         shell: bash
         run: |
           set -euo pipefail
+
+          python3 "$AUTOMATION_DIR/tools/localization/import_android_translations.py" \
+            --root "$SRC_DIR" \
+            --dictionary "$AUTOMATION_DIR/localization/android_strings_zh_cn.json" \
+            --report "$RUNNER_TEMP/resource-translation-audit.md"
 
           python3 "$AUTOMATION_DIR/tools/localization/apply_translation.py" \
             --root "$SRC_DIR" \
             --dictionary "$AUTOMATION_DIR/localization/strings_zh_cn.json" \
             --report "$RUNNER_TEMP/translation-audit.txt"
 
-          # 把汉化词条与脚本一并放进对应版本源码，便于独立接档。
+          # 将两类检查结果合并到同一个 Release 附件。
+          cat "$RUNNER_TEMP/resource-translation-audit.md" >> "$RUNNER_TEMP/translation-audit.txt"
+
+          # 将实际使用的翻译表和导入工具复制到构建源码中，便于后续接档。
           mkdir -p "$SRC_DIR/localization" "$SRC_DIR/tools/localization"
           cp "$AUTOMATION_DIR/localization/strings_zh_cn.json" \
             "$SRC_DIR/localization/strings_zh_cn.json"
+          cp "$AUTOMATION_DIR/localization/android_strings_zh_cn.json" \
+            "$SRC_DIR/localization/android_strings_zh_cn.json"
           cp "$AUTOMATION_DIR/tools/localization/apply_translation.py" \
             "$SRC_DIR/tools/localization/apply_translation.py"
+          cp "$AUTOMATION_DIR/tools/localization/import_android_translations.py" \
+            "$SRC_DIR/tools/localization/import_android_translations.py"
           cp "$AUTOMATION_DIR/tools/localization/prepare_build.py" \
             "$SRC_DIR/tools/localization/prepare_build.py"
           cp "$AUTOMATION_DIR/docs/汉化自动构建说明.md" \
@@ -539,72 +549,28 @@ jobs:
             "$RUNNER_TEMP/hakux-release-assets/hakuX-${UPSTREAM_TAG}-zh-CN.apk" \
             > "$RUNNER_TEMP/hakux-release-assets/SHA256SUMS.txt"
 
-      - name: 生成完整源码附件和构建信息
-        env:
-          UPSTREAM_COMMIT: ${{ steps.source.outputs.upstream_commit }}
-          GH_TOKEN: ${{ github.token }}
+      - name: 准备精简 Release 说明和汉化审查报告
         shell: bash
         run: |
           set -euo pipefail
 
           assets="$RUNNER_TEMP/hakux-release-assets"
-          source_archive="$assets/hakuX-${UPSTREAM_TAG}-zh-CN-source.tar.gz"
-          build_info="$assets/build-info.txt"
           notes="$assets/release-notes.md"
 
-          # 把构建时使用的固定版本第三方源码一并收进源码附件，
-          # 避免源码包依赖 Actions 临时目录。
-          mkdir -p "$SRC_DIR/vendor-build-deps"
-          rsync -a "$NC_DEPS/" "$SRC_DIR/vendor-build-deps/"
-
-          # 清理密钥配置、构建产物和 Git 元数据，避免把它们发到公开 Release。
-          rm -f "$SRC_DIR/android/key.properties" "$SRC_DIR/android/app/key.properties"
-          rm -rf "$SRC_DIR/android/.gradle" "$SRC_DIR/android/app/build" "$SRC_DIR/build"
-          find "$SRC_DIR" -name .git -exec rm -rf {} +
-
-          tar -czf "$source_archive" \
-            --exclude='*.jks' \
-            --exclude='key.properties' \
-            --exclude='.gradle' \
-            --exclude='*/build' \
-            -C "$SRC_DIR" .
-
-          cat > "$build_info" <<EOF
-          上游仓库：rfandango/hakuX
-          上游正式版本：${UPSTREAM_TAG}
-          上游提交：${UPSTREAM_COMMIT}
-          汉化发行标签：${RELEASE_TAG}
-          构建时间（UTC）：$(date -u '+%Y-%m-%d %H:%M:%S')
-          构建架构：arm64-v8a
-          应用包名后缀：.zhcn
-          签名：GitHub Secrets 保存的固定社区构建签名
-          汉化审查：translation-audit.txt
-          EOF
-
-          gh api "repos/rfandango/hakuX/releases/tags/${UPSTREAM_TAG}" \
-            > "$RUNNER_TEMP/upstream-release.json"
-
-          {
-            echo "# hakuX ${UPSTREAM_TAG} 简体中文版"
-            echo
-            echo "本发行基于上游正式 Release \`${UPSTREAM_TAG}\` 构建。"
-            echo
-            echo "- 应用包名为官方包名加 \`.zhcn\`，可与官方版并行安装。"
-            echo "- APK 使用 GitHub Actions Secrets 中保存的固定社区签名，不是上游官方签名。"
-            echo "- 源码附件包含对应上游源码、汉化资源、翻译脚本和固定版本的原生依赖源码。"
-            echo "- 许可证：GPL-3.0-or-later；第三方组件依其各自许可证执行。"
-            echo
-            echo "## 上游更新说明"
-            echo
-            jq -r '.body // "上游未提供更新说明。"' \
-              "$RUNNER_TEMP/upstream-release.json"
-            echo
-            echo "## 汉化审查"
-            echo
-            echo "详见附件 \`translation-audit.txt\`：包含字典未匹配词条及扫描到的未翻译静态界面文案候选。未翻译候选不会阻止发行；动态文本和原生文案仍需人工审查。"
-          } > "$notes"
-
+          # Release 只提供用户实际需要的 APK、校验文件和汉化审查报告。
+          # 不生成源码归档或单独的构建信息文件，避免上传不必要的附件。
           cp "$RUNNER_TEMP/translation-audit.txt" "$assets/translation-audit.txt"
+
+          cat > "$notes" <<EOF
+          # hakuX ${UPSTREAM_TAG} 简体中文版
+
+          本版本基于上游正式 Release \`${UPSTREAM_TAG}\` 构建。
+
+          - APK 使用仓库 Secrets 中保存的固定社区签名，可与官方版并行安装。
+          - 未匹配词条和未翻译界面候选见附件 \`translation-audit.txt\`。
+          - 未翻译候选不会阻止发行；动态文本和原生界面仍可能需要人工补译。
+          - APK 的 SHA-256 校验值见附件 \`SHA256SUMS.txt\`。
+          EOF
 
       - name: 发布正式简体中文版 Release
         env:
@@ -617,8 +583,6 @@ jobs:
 
           gh release create "$RELEASE_TAG" \
             "$assets/hakuX-${UPSTREAM_TAG}-zh-CN.apk" \
-            "$assets/hakuX-${UPSTREAM_TAG}-zh-CN-source.tar.gz" \
-            "$assets/build-info.txt" \
             "$assets/SHA256SUMS.txt" \
             "$assets/translation-audit.txt" \
             --repo "$GITHUB_REPOSITORY" \
