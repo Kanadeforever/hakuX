@@ -1,7 +1,7 @@
 name: hakuX 上游正式版简体中文发行
 
 on:
-  # 每天 UTC+0 03:17 检查上游最新正式 Release（对应北京时间 11:17）。
+  # 每天 UTC+0 04:00 检查上游最新正式 Release（对应北京时间 12:00）。
   schedule:
     - cron: "0 4 * * *"
   workflow_dispatch:
@@ -127,16 +127,16 @@ jobs:
             External/xxhash \
             Source/Common/cpp-optparse
 
-      - name: 将应用内升级检查切换到汉化仓库
+      - name: 禁用应用内升级提醒
         shell: bash
         run: |
           set -euo pipefail
 
-          # 只修改 Android 升级检查代码中的仓库引用，不修改项目主页等普通链接。
-          python3 "$AUTOMATION_DIR/tools/localization/patch_update_repository.py" \
+          # 保留上游升级功能的原始代码结构，只在本次构建副本中让检查入口不再触发提醒。
+          # 如果上游更改了函数结构，修补脚本会报告并停止构建，避免静默发布未屏蔽的版本。
+          python3 "$AUTOMATION_DIR/tools/localization/disable_app_updates.py" \
             --root "$SRC_DIR" \
-            --repository "$GITHUB_REPOSITORY" \
-            --report "$RUNNER_TEMP/update-checker-patch.md"
+            --report "$RUNNER_TEMP/update-reminder-suppression.md"
 
       - name: 导入资源 ID 翻译并检查上游文案变化
         shell: bash
@@ -153,29 +153,9 @@ jobs:
             --dictionary "$AUTOMATION_DIR/localization/strings_zh_cn.json" \
             --report "$RUNNER_TEMP/translation-audit.txt"
 
-          # 将资源翻译与升级检查结果合并到同一个 Release 附件。
+          # 将资源翻译与升级提醒屏蔽结果合并到同一个 Release 附件。
           cat "$RUNNER_TEMP/resource-translation-audit.md" >> "$RUNNER_TEMP/translation-audit.txt"
-          cat "$RUNNER_TEMP/update-checker-patch.md" >> "$RUNNER_TEMP/translation-audit.txt"
-
-          # 将实际使用的翻译表和导入工具复制到构建源码中，便于后续接档。
-          mkdir -p "$SRC_DIR/localization" "$SRC_DIR/tools/localization"
-          cp "$AUTOMATION_DIR/localization/strings_zh_cn.json" \
-            "$SRC_DIR/localization/strings_zh_cn.json"
-          cp "$AUTOMATION_DIR/localization/android_strings_zh_cn.json" \
-            "$SRC_DIR/localization/android_strings_zh_cn.json"
-          cp "$AUTOMATION_DIR/tools/localization/apply_translation.py" \
-            "$SRC_DIR/tools/localization/apply_translation.py"
-          cp "$AUTOMATION_DIR/tools/localization/import_android_translations.py" \
-            "$SRC_DIR/tools/localization/import_android_translations.py"
-          cp "$AUTOMATION_DIR/tools/localization/prepare_build.py" \
-            "$SRC_DIR/tools/localization/prepare_build.py"
-          cp "$AUTOMATION_DIR/tools/localization/patch_update_repository.py" \
-            "$SRC_DIR/tools/localization/patch_update_repository.py"
-          cp "$AUTOMATION_DIR/docs/汉化自动构建说明.md" \
-            "$SRC_DIR/docs_简体中文汉化自动构建说明.md"
-          mkdir -p "$SRC_DIR/.github/workflows"
-          cp "$AUTOMATION_DIR/.github/workflows/upstream-release-zh.yml" \
-            "$SRC_DIR/.github/workflows/upstream-release-zh.yml"
+          cat "$RUNNER_TEMP/update-reminder-suppression.md" >> "$RUNNER_TEMP/translation-audit.txt"
 
       - name: 读取本次 Release 的原生依赖版本
         id: deps
@@ -379,7 +359,7 @@ jobs:
 
           echo "SIGNING_KEYSTORE=$signing_dir/hakux-zhcn.jks" >> "$GITHUB_ENV"
 
-      - name: 准备独立包名、版本号和固定签名配置
+      - name: 准备独立包名与固定签名配置
         env:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
@@ -390,7 +370,6 @@ jobs:
 
           python3 "$AUTOMATION_DIR/tools/localization/prepare_build.py" \
             --root "$SRC_DIR" \
-            --upstream-tag "$UPSTREAM_TAG" \
             --keystore "$SIGNING_KEYSTORE" \
             --keystore-password "$ANDROID_KEYSTORE_PASSWORD" \
             --key-alias "$ANDROID_KEY_ALIAS" \
