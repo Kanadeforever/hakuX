@@ -107,6 +107,9 @@ jobs:
         run: |
           set -euo pipefail
 
+          # 源码与依赖统一放入工作区临时目录，先创建克隆所需的父目录。
+          mkdir -p "$(dirname "$SRC_DIR")" "$(dirname "$NC_DEPS")"
+
           git clone --depth 1 --branch "$UPSTREAM_TAG" \
             https://github.com/rfandango/hakuX.git "$SRC_DIR"
 
