@@ -3,7 +3,7 @@ name: hakuX 上游正式版简体中文发行
 on:
   # 每天 UTC+0 03:17 检查上游最新正式 Release（对应北京时间 11:17）。
   schedule:
-    - cron: "17 3 * * *"
+    - cron: "0 4 * * *"
   workflow_dispatch:
 
 permissions:
@@ -153,7 +153,7 @@ jobs:
             --dictionary "$AUTOMATION_DIR/localization/strings_zh_cn.json" \
             --report "$RUNNER_TEMP/translation-audit.txt"
 
-          # 将两类检查结果合并到同一个 Release 附件。
+          # 将资源翻译与升级检查结果合并到同一个 Release 附件。
           cat "$RUNNER_TEMP/resource-translation-audit.md" >> "$RUNNER_TEMP/translation-audit.txt"
           cat "$RUNNER_TEMP/update-checker-patch.md" >> "$RUNNER_TEMP/translation-audit.txt"
 
@@ -564,27 +564,44 @@ jobs:
             > "$RUNNER_TEMP/hakux-release-assets/SHA256SUMS.txt"
 
       - name: 准备精简 Release 说明和汉化审查报告
+        env:
+          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
 
           assets="$RUNNER_TEMP/hakux-release-assets"
           notes="$assets/release-notes.md"
+          upstream_notes="$RUNNER_TEMP/upstream-release-notes.md"
 
-          # Release 只提供用户实际需要的 APK、校验文件和汉化审查报告。
-          # 不生成源码归档或单独的构建信息文件，避免上传不必要的附件。
+          # 按本次构建的上游标签读取正文，不能使用 latest，以免发布错版本的说明。
+          gh api "repos/rfandango/hakuX/releases/tags/${UPSTREAM_TAG}" \
+            --jq '.body // ""' > "$upstream_notes"
+
+          # Release 只提供 APK、校验文件和汉化审查报告，不附带完整源码包。
           cp "$RUNNER_TEMP/translation-audit.txt" "$assets/translation-audit.txt"
 
-          cat > "$notes" <<EOF
-          # hakuX ${UPSTREAM_TAG} 简体中文版
+          # 使用 printf 写入自有说明，避免上游正文中的反引号或美元符号被 Shell 当作命令执行。
+          {
+            printf '# hakuX %s 简体中文版\n\n' "$UPSTREAM_TAG"
+            printf '本版本基于上游正式 Release [%s](https://github.com/rfandango/hakuX/releases/tag/%s) 构建。\n\n' \
+              "$UPSTREAM_TAG" "$UPSTREAM_TAG"
+            printf '%s\n' \
+              '- APK 使用仓库 Secrets 中保存的固定社区签名，可与官方版并行安装。' \
+              '- 未匹配词条和未翻译界面候选见附件 `translation-audit.txt`。' \
+              '- 未翻译候选不会阻止发行；动态文本和原生界面仍可能需要人工补译。' \
+              '- APK 的 SHA-256 校验值见附件 `SHA256SUMS.txt`。'
+            printf '\n---\n\n## 上游原始 Release 说明（原文）\n'
+          } > "$notes"
 
-          本版本基于上游正式 Release \`${UPSTREAM_TAG}\` 构建。
-
-          - APK 使用仓库 Secrets 中保存的固定社区签名，可与官方版并行安装。
-          - 未匹配词条和未翻译界面候选见附件 \`translation-audit.txt\`。
-          - 未翻译候选不会阻止发行；动态文本和原生界面仍可能需要人工补译。
-          - APK 的 SHA-256 校验值见附件 \`SHA256SUMS.txt\`。
-          EOF
+          # 原样追加该上游标签的 Release 正文；不翻译、不改写、不丢弃原始内容。
+          if [[ -s "$upstream_notes" ]]; then
+            printf '\n' >> "$notes"
+            cat "$upstream_notes" >> "$notes"
+            printf '\n' >> "$notes"
+          else
+            printf '\n（该上游 Release 未提供说明正文。）\n' >> "$notes"
+          fi
 
       - name: 发布正式简体中文版 Release
         env:
