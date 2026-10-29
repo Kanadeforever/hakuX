@@ -1,0 +1,662 @@
+
+name: hakuX 上游正式版简体中文构建
+
+on:
+  # 每天北京时间 11:17 检查一次。
+  schedule:
+    - cron: "17 3 * * *"
+  # 允许在 Actions 页面手动触发。
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: hakux-upstream-release
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    outputs:
+      should_build: ${{ steps.release.outputs.should_build }}
+      upstream_tag: ${{ steps.release.outputs.upstream_tag }}
+      release_tag: ${{ steps.release.outputs.release_tag }}
+
+    steps:
+      - name: 检查上游最新正式 Release
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          # GitHub 的 latest 接口只返回最新的正式发行版。
+          metadata="$(gh api repos/rfandango/hakuX/releases/latest)"
+          upstream_tag="$(jq -r '.tag_name // empty' <<< "$metadata")"
+
+          if [[ -z "$upstream_tag" ]]; then
+            echo "::error::无法获取上游正式 Release 标签。"
+            exit 1
+          fi
+
+          # 使用独立标签，避免与上游原始标签冲突。
+          release_tag="zhcn-${upstream_tag}"
+
+          echo "upstream_tag=$upstream_tag" >> "$GITHUB_OUTPUT"
+          echo "release_tag=$release_tag" >> "$GITHUB_OUTPUT"
+
+          # 已发布的汉化版本不重复构建。
+          if gh release view "$release_tag" \
+            --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "should_build=false" >> "$GITHUB_OUTPUT"
+            echo "上游版本 $upstream_tag 已有汉化版，跳过构建。"
+          else
+            echo "should_build=true" >> "$GITHUB_OUTPUT"
+            echo "发现尚未发布的上游版本：$upstream_tag"
+          fi
+
+  build:
+    needs: check
+    if: needs.check.outputs.should_build == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+
+    env:
+      UPSTREAM_TAG: ${{ needs.check.outputs.upstream_tag }}
+      RELEASE_TAG: ${{ needs.check.outputs.release_tag }}
+      SRC_DIR: ${{ runner.temp }}/hakux-source
+      AUTOMATION_DIR: ${{ github.workspace }}/automation
+      NC_DEPS: ${{ runner.temp }}/native-deps
+
+    steps:
+      # 汉化补丁与工作流保存在自己的 Fork 中。
+      - name: 检出汉化维护文件
+        uses: actions/checkout@v4
+        with:
+          path: automation
+          persist-credentials: false
+
+      - name: 安装构建辅助工具
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y \
+            git jq ninja-build rsync python3
+
+      - name: 安装 JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: 配置 Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: 安装 Android 构建组件
+        run: |
+          set -euo pipefail
+
+          yes | sdkmanager --licenses >/dev/null
+
+          sdkmanager --install \
+            "platforms;android-36" \
+            "build-tools;36.1.0" \
+            "ndk;29.0.14206865" \
+            "cmake;3.30.3"
+
+          echo "$ANDROID_HOME/cmake/3.30.3/bin" >> "$GITHUB_PATH"
+
+      - name: 获取上游指定版本源码
+        id: source
+        run: |
+          set -euo pipefail
+
+          # 使用 Release 对应的标签，而不是开发分支的最新提交。
+          git clone \
+            --depth 1 \
+            --branch "$UPSTREAM_TAG" \
+            https://github.com/rfandango/hakuX.git \
+            "$SRC_DIR"
+
+          upstream_commit="$(git -C "$SRC_DIR" rev-parse HEAD)"
+          echo "upstream_commit=$upstream_commit" >> "$GITHUB_OUTPUT"
+
+          # 获取原生核心依赖的 FEX 子模块及指定的嵌套子模块。
+          git -C "$SRC_DIR" submodule update --init external/fex
+
+          git -C "$SRC_DIR/external/fex" submodule update --init \
+            External/fmt \
+            External/range-v3 \
+            External/rpmalloc \
+            External/unordered_dense \
+            External/xxhash \
+            Source/Common/cpp-optparse
+
+      - name: 应用汉化资源与源码补丁
+        run: |
+          set -euo pipefail
+
+          patch_dir="$AUTOMATION_DIR/localization/patches"
+          overlay_dir="$AUTOMATION_DIR/localization/overlay"
+
+          # 没有实际汉化内容时禁止继续，避免发布英文原版。
+          patch_count=0
+          overlay_count=0
+
+          if [[ -d "$patch_dir" ]]; then
+            patch_count="$(find "$patch_dir" -type f \
+              -name '*.patch' | wc -l)"
+          fi
+
+          if [[ -d "$overlay_dir" ]]; then
+            overlay_count="$(find "$overlay_dir" -type f \
+              ! -name README.md \
+              ! -name .gitkeep | wc -l)"
+          fi
+
+          if (( patch_count == 0 && overlay_count == 0 )); then
+            echo "::error::尚未配置汉化补丁或中文资源。"
+            echo "请先将已审核的汉化文件放入 localization/overlay，"
+            echo "或将源码修改保存为 localization/patches/*.patch。"
+            exit 1
+          fi
+
+          # 先覆盖中文资源文件，保持它们在原源码中的相对路径。
+          if [[ -d "$overlay_dir" ]]; then
+            rsync -a \
+              --exclude=README.md \
+              --exclude=.gitkeep \
+              "$overlay_dir/" "$SRC_DIR/"
+          fi
+
+          # 每个补丁都必须能干净地应用到本次上游 Release。
+          if [[ -d "$patch_dir" ]]; then
+            while IFS= read -r -d '' patch_file; do
+              echo "检查补丁：$(basename "$patch_file")"
+
+              git -C "$SRC_DIR" apply --check "$patch_file"
+              git -C "$SRC_DIR" apply "$patch_file"
+            done < <(
+              find "$patch_dir" -type f -name '*.patch' \
+                -print0 | sort -z
+            )
+          fi
+
+          # NDK 在 Linux 下提供 llvm-strip。
+          # 兼容仍引用 Windows 专用 llvm-strip.exe 的打包脚本。
+          python3 - "$SRC_DIR/tools/native/app-libs.sh" <<'PY'
+          import sys
+          from pathlib import Path
+
+          path = Path(sys.argv[1])
+          if path.is_file():
+              content = path.read_bytes()
+              content = content.replace(
+                  b"llvm-strip.exe", b"llvm-strip"
+              )
+              path.write_bytes(content)
+          PY
+
+      - name: 检查汉化资源与疑似硬编码英文
+        env:
+          AUDIT_REPORT: ${{ runner.temp }}/translation-audit.txt
+        run: |
+          set -euo pipefail
+
+          python3 - "$SRC_DIR" "$AUDIT_REPORT" <<'PY'
+          import re
+          import sys
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+
+          root = Path(sys.argv[1])
+          report = Path(sys.argv[2])
+          android = root / "android"
+
+          # 确保实际 Android 源码中确实存在简体中文内容。
+          code_files = [
+              p for p in android.rglob("*")
+              if p.is_file()
+              and p.suffix in {".kt", ".java", ".xml"}
+              and not any(
+                  part in {"build", ".gradle"}
+                  for part in p.parts
+              )
+          ]
+
+          has_chinese = False
+          for path in code_files:
+              text = path.read_text(
+                  encoding="utf-8", errors="ignore"
+              )
+              if re.search(r"[\u3400-\u9fff]", text):
+                  has_chinese = True
+                  break
+
+          if not has_chinese:
+              raise SystemExit(
+                  "Android 源码中未发现中文内容，拒绝发布。"
+              )
+
+          # 检查标准 Android 字符串资源的中文键覆盖情况。
+          missing = []
+
+          for base in root.glob(
+              "android/**/src/main/res/values/strings.xml"
+          ):
+              zh_file = (
+                  base.parent.parent
+                  / "values-zh-rCN"
+                  / "strings.xml"
+              )
+
+              if not zh_file.is_file():
+                  missing.append(
+                      f"{base.relative_to(root)} 缺少对应中文资源文件"
+                  )
+                  continue
+
+              base_root = ET.parse(base).getroot()
+              zh_root = ET.parse(zh_file).getroot()
+
+              base_keys = {
+                  item.attrib["name"]
+                  for item in base_root
+                  if item.attrib.get("name")
+              }
+              zh_keys = {
+                  item.attrib["name"]
+                  for item in zh_root
+                  if item.attrib.get("name")
+              }
+
+              for key in sorted(base_keys - zh_keys):
+                  missing.append(
+                      f"{zh_file.relative_to(root)} 缺少资源键：{key}"
+                  )
+
+          if missing:
+              print("\n".join(missing))
+              raise SystemExit(
+                  "中文资源存在缺失，停止构建与发布。"
+              )
+
+          # 扫描常见 Compose 文本写法，生成疑似英文文案报告。
+          # 该扫描仅用于人工复核，不会误把所有英文标识符
+          # 当作未翻译文案，也不会单独阻断发布。
+          patterns = [
+              re.compile(
+                  r'\bText\s*\(\s*(?:text\s*=\s*)?'
+                  r'["\']([^"\']{2,})["\']'
+              ),
+              re.compile(
+                  r'\b(?:title|label|contentDescription)'
+                  r'\s*=\s*["\']([^"\']{2,})["\']'
+              ),
+          ]
+
+          findings = []
+
+          for path in code_files:
+              if path.suffix != ".kt":
+                  continue
+
+              lines = path.read_text(
+                  encoding="utf-8", errors="ignore"
+              ).splitlines()
+
+              for number, line in enumerate(lines, 1):
+                  for pattern in patterns:
+                      for match in pattern.finditer(line):
+                          value = match.group(1)
+
+                          if (
+                              re.search(r"[A-Za-z]{3,}", value)
+                              and not re.search(
+                                  r"[\u3400-\u9fff]", value
+                              )
+                          ):
+                              findings.append(
+                                  f"{path.relative_to(root)}:"
+                                  f"{number}: {value}"
+                              )
+
+          report.parent.mkdir(parents=True, exist_ok=True)
+          if findings:
+              report.write_text(
+                  "疑似硬编码英文文案，请人工复核：\n"
+                  + "\n".join(findings)
+                  + "\n",
+                  encoding="utf-8",
+              )
+              print(
+                  f"::warning::发现 {len(findings)} 条"
+                  "疑似英文文案，详见审查报告。"
+              )
+          else:
+              report.write_text(
+                  "未检测到符合当前扫描规则的疑似英文文案。\n",
+                  encoding="utf-8",
+              )
+          PY
+
+      - name: 读取上游固定依赖版本
+        id: deps
+        run: |
+          set -euo pipefail
+
+          # 从本次 Release 自带的构建说明读取依赖版本，
+          # 避免使用其他版本的开发分支依赖。
+          python3 - "$SRC_DIR/android/README.md" <<'PY'
+          import os
+          import sys
+          from pathlib import Path
+
+          readme = Path(sys.argv[1])
+          if not readme.is_file():
+              raise SystemExit("找不到 Android 构建说明。")
+
+          lines = readme.read_text(
+              encoding="utf-8"
+          ).splitlines()
+
+          dependencies = {
+              "volk": "volk",
+              "glslang": "glslang",
+              "spirv_reflect": "spirv_reflect",
+              "vma": "vma",
+              "SDL3": "SDL3",
+              "adrenotools": "adrenotools",
+              "nv2a_vsh_cpu": "root/subprojects/nv2a_vsh_cpu",
+          }
+
+          refs = {}
+
+          for line in lines:
+              if not line.strip().startswith("|"):
+                  continue
+
+              cells = [
+                  cell.strip()
+                  for cell in line.strip().strip("|").split("|")
+              ]
+
+              if len(cells) < 2:
+                  continue
+
+              path = cells[0].strip("`")
+              version = cells[1].split(",")[0].strip().strip("`")
+
+              for name, expected_path in dependencies.items():
+                  if path == expected_path:
+                      refs[name] = version
+
+          missing = set(dependencies) - set(refs)
+          if missing:
+              raise SystemExit(
+                  "无法从本次 Release 的构建说明读取依赖版本："
+                  + ", ".join(sorted(missing))
+              )
+
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              for name, version in refs.items():
+                  output.write(f"{name}={version}\n")
+          PY
+
+      - name: 获取原生构建依赖
+        env:
+          VOLK_REF: ${{ steps.deps.outputs.volk }}
+          GLSLANG_REF: ${{ steps.deps.outputs.glslang }}
+          SPIRV_REFLECT_REF: ${{ steps.deps.outputs.spirv_reflect }}
+          VMA_REF: ${{ steps.deps.outputs.vma }}
+          SDL3_REF: ${{ steps.deps.outputs.SDL3 }}
+          ADRENOTOOLS_REF: ${{ steps.deps.outputs.adrenotools }}
+          NV2A_VSH_CPU_REF: ${{ steps.deps.outputs.nv2a_vsh_cpu }}
+        run: |
+          set -euo pipefail
+
+          # 按构建说明指定的版本检出第三方源码。
+          clone_at() {
+            local url="$1"
+            local ref="$2"
+            local destination="$3"
+
+            mkdir -p "$(dirname "$destination")"
+
+            git clone --filter=blob:none --no-checkout \
+              "$url" "$destination"
+
+            git -C "$destination" checkout --detach "$ref"
+          }
+
+          mkdir -p "$NC_DEPS"
+
+          clone_at \
+            https://github.com/zeux/volk.git \
+            "$VOLK_REF" "$NC_DEPS/volk"
+
+          clone_at \
+            https://github.com/KhronosGroup/glslang.git \
+            "$GLSLANG_REF" "$NC_DEPS/glslang"
+
+          clone_at \
+            https://github.com/KhronosGroup/SPIRV-Reflect.git \
+            "$SPIRV_REFLECT_REF" "$NC_DEPS/spirv_reflect"
+
+          clone_at \
+            https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git \
+            "$VMA_REF" "$NC_DEPS/vma"
+
+          clone_at \
+            https://github.com/libsdl-org/SDL.git \
+            "$SDL3_REF" "$NC_DEPS/SDL3"
+
+          clone_at \
+            https://github.com/bylaws/libadrenotools.git \
+            "$ADRENOTOOLS_REF" "$NC_DEPS/adrenotools"
+
+          clone_at \
+            https://github.com/xemu-project/nv2a_vsh_cpu.git \
+            "$NV2A_VSH_CPU_REF" \
+            "$NC_DEPS/root/subprojects/nv2a_vsh_cpu"
+
+          # 应用上游构建说明要求的 KGSL 上下文优先级补丁。
+          patch_file="$SRC_DIR/tools/native/adrenotools-kgsl-context-priority.patch"
+
+          if [[ ! -f "$patch_file" ]]; then
+            echo "::error::缺少 adrenotools 构建补丁。"
+            exit 1
+          fi
+
+          git -C "$NC_DEPS/adrenotools" apply --check "$patch_file"
+          git -C "$NC_DEPS/adrenotools" apply "$patch_file"
+
+      - name: 生成完整源码快照及发行标签
+        env:
+          UPSTREAM_COMMIT: ${{ steps.source.outputs.upstream_commit }}
+        run: |
+          set -euo pipefail
+
+          snapshot="$RUNNER_TEMP/hakux-release-source"
+          mkdir -p "$snapshot"
+
+          # 将上游源码及已检出的子模块内容复制成普通文件，
+          # 让发行源码不依赖 Git 子模块的外部工作目录。
+          rsync -a \
+            --exclude='.git' \
+            --exclude='/build/' \
+            --exclude='/android/.gradle/' \
+            --exclude='/android/app/build/' \
+            --exclude='/android/release.keystore' \
+            --exclude='/android/key.properties' \
+            --exclude='/android/app/key.properties' \
+            "$SRC_DIR/" "$snapshot/"
+
+          # 子模块内容已经包含在快照内，不再保留 Git 元数据。
+          find "$snapshot" -name .git -prune -exec rm -rf {} +
+          rm -f "$snapshot/.gitmodules"
+
+          # 为完整源码快照建立独立提交。
+          # 只有构建成功后才会把标签推送到用户的仓库。
+          git -C "$snapshot" init -b main
+          git -C "$snapshot" config user.name "github-actions[bot]"
+          git -C "$snapshot" config user.email \
+            "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git -C "$snapshot" add -f -A
+
+          git -C "$snapshot" commit \
+            -m "hakuX ${UPSTREAM_TAG} 简体中文发行源码"
+
+          git -C "$snapshot" tag -a "$RELEASE_TAG" \
+            -m "hakuX ${UPSTREAM_TAG} 简体中文版"
+
+          echo "SOURCE_SNAPSHOT=$snapshot" >> "$GITHUB_ENV"
+
+      - name: 编译 Android 原生核心
+        run: |
+          set -euo pipefail
+
+          export ANDROID_NDK_HOME="$ANDROID_HOME/ndk/29.0.14206865"
+
+          cmake \
+            -S "$SRC_DIR/native" \
+            -B "$SRC_DIR/build/native/core" \
+            -G Ninja \
+            -DCMAKE_TOOLCHAIN_FILE="$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake" \
+            -DANDROID_ABI=arm64-v8a \
+            -DANDROID_PLATFORM=android-28 \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DNC_DEPS="$NC_DEPS"
+
+          ninja -C "$SRC_DIR/build/native/core" hakuxcore
+
+          # 将核心、SDL3 和驱动钩子库放入 Android 工程。
+          cd "$SRC_DIR"
+          bash tools/native/app-libs.sh
+
+      - name: 配置签名并编译 APK
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+
+          # 正式发行使用固定签名密钥，保证不同版本可以原位更新。
+          if [[ -z "$ANDROID_KEYSTORE_BASE64" \
+             || -z "$ANDROID_KEYSTORE_PASSWORD" \
+             || -z "$ANDROID_KEY_ALIAS" \
+             || -z "$ANDROID_KEY_PASSWORD" ]]; then
+            echo "::error::请先配置 Android 签名 Secrets。"
+            exit 1
+          fi
+
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" \
+            | base64 --decode > "$SRC_DIR/android/release.keystore"
+
+          chmod 600 "$SRC_DIR/android/release.keystore"
+
+          # 同时兼容从 Android 根目录和 app 模块读取配置的构建脚本。
+          for properties in \
+            "$SRC_DIR/android/key.properties" \
+            "$SRC_DIR/android/app/key.properties"; do
+            cat > "$properties" <<EOF
+          storeFile=$SRC_DIR/android/release.keystore
+          storePassword=$ANDROID_KEYSTORE_PASSWORD
+          keyAlias=$ANDROID_KEY_ALIAS
+          keyPassword=$ANDROID_KEY_PASSWORD
+          EOF
+          done
+
+          cd "$SRC_DIR/android"
+          chmod +x ./gradlew
+          ./gradlew --no-daemon clean assembleRelease
+
+          # APK 必须存在且为有效 ZIP 文件。
+          mapfile -t apks < <(
+            find app/build/outputs/apk/release \
+              -type f -name '*.apk' | sort
+          )
+
+          if [[ "${#apks[@]}" -ne 1 ]]; then
+            echo "::error::Release APK 数量异常。"
+            exit 1
+          fi
+
+          unzip -t "${apks[0]}" >/dev/null
+          echo "APK_PATH=${apks[0]}" >> "$GITHUB_ENV"
+
+      - name: 整理发行附件
+        env:
+          UPSTREAM_COMMIT: ${{ steps.source.outputs.upstream_commit }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          source_archive="$RUNNER_TEMP/hakuX-${UPSTREAM_TAG}-zh-CN-source.tar.gz"
+          build_info="$RUNNER_TEMP/build-info.txt"
+          release_notes="$RUNNER_TEMP/release-notes.md"
+          audit_report="$RUNNER_TEMP/translation-audit.txt"
+
+          # 归档独立源码快照，包含已检出的子模块源码。
+          git -C "$SOURCE_SNAPSHOT" archive \
+            --format=tar.gz \
+            --prefix="hakuX-${UPSTREAM_TAG}-zh-CN/" \
+            "$RELEASE_TAG" > "$source_archive"
+
+          cat > "$build_info" <<EOF
+          上游仓库：rfandango/hakuX
+          上游 Release：${UPSTREAM_TAG}
+          上游提交：${UPSTREAM_COMMIT}
+          汉化发行标签：${RELEASE_TAG}
+          构建时间（UTC）：$(date -u '+%Y-%m-%d %H:%M:%S')
+          构建架构：arm64-v8a
+          构建结果：成功
+          EOF
+
+          # 将上游发布说明保留在汉化版发行说明中。
+          gh api \
+            "repos/rfandango/hakuX/releases/tags/${UPSTREAM_TAG}" \
+            > "$RUNNER_TEMP/upstream-release.json"
+
+          {
+            echo "# hakuX ${UPSTREAM_TAG} 简体中文版"
+            echo
+            echo "此版本基于上游正式 Release 的对应标签源码构建。"
+            echo
+            echo "- 上游版本：${UPSTREAM_TAG}"
+            echo "- 上游提交：${UPSTREAM_COMMIT}"
+            echo "- 源码附件：完整汉化源码快照"
+            echo "- 许可证：GPL-3.0-or-later，第三方组件按各自许可证执行"
+            echo
+            echo "## 上游更新说明"
+            echo
+            jq -r '.body // "上游未提供更新说明。"' \
+              "$RUNNER_TEMP/upstream-release.json"
+            echo
+            echo "## 汉化说明"
+            echo
+            echo "疑似仍为英文的界面文字见 translation-audit.txt。"
+          } > "$release_notes"
+
+          # 推送的是完整源码快照标签，不修改 Fork 的默认分支。
+          git -C "$SOURCE_SNAPSHOT" remote add fork \
+            "https://github.com/${GITHUB_REPOSITORY}.git"
+
+          gh auth setup-git
+
+          git -C "$SOURCE_SNAPSHOT" push --force fork \
+            "refs/tags/${RELEASE_TAG}"
+
+          # 仅在构建、检查和签名均成功后创建正式 Release。
+          gh release create "$RELEASE_TAG" \
+            "$APK_PATH#hakuX-${UPSTREAM_TAG}-zh-CN.apk" \
+            "$source_archive#hakuX-${UPSTREAM_TAG}-zh-CN-source.tar.gz" \
+            "$build_info#build-info.txt" \
+            "$audit_report#translation-audit.txt" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "hakuX ${UPSTREAM_TAG} 简体中文版" \
+            --notes-file "$release_notes"
