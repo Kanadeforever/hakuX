@@ -3,7 +3,7 @@ name: hakuX 上游正式版简体中文发行
 on:
   # 每天 UTC+0 03:17 检查上游最新正式 Release（对应北京时间 11:17）。
   schedule:
-    - cron: "00 4 * * *"
+    - cron: "17 3 * * *"
   workflow_dispatch:
 
 permissions:
@@ -38,7 +38,7 @@ jobs:
             exit 1
           fi
 
-          release_tag="zhcn-${upstream_tag}"
+          release_tag="${upstream_tag}"
           echo "upstream_tag=$upstream_tag" >> "$GITHUB_OUTPUT"
           echo "release_tag=$release_tag" >> "$GITHUB_OUTPUT"
 
@@ -48,7 +48,7 @@ jobs:
             echo "汉化版 $release_tag 已存在，跳过重复构建。"
           else
             echo "should_build=true" >> "$GITHUB_OUTPUT"
-            echo "发现新上游正式版本：$upstream_tag"
+            echo "发现尚未发布的汉化版本：$release_tag（上游：$upstream_tag）"
           fi
 
   build:
@@ -127,6 +127,17 @@ jobs:
             External/xxhash \
             Source/Common/cpp-optparse
 
+      - name: 将应用内升级检查切换到汉化仓库
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # 只修改 Android 升级检查代码中的仓库引用，不修改项目主页等普通链接。
+          python3 "$AUTOMATION_DIR/tools/localization/patch_update_repository.py" \
+            --root "$SRC_DIR" \
+            --repository "$GITHUB_REPOSITORY" \
+            --report "$RUNNER_TEMP/update-checker-patch.md"
+
       - name: 导入资源 ID 翻译并检查上游文案变化
         shell: bash
         run: |
@@ -144,6 +155,7 @@ jobs:
 
           # 将两类检查结果合并到同一个 Release 附件。
           cat "$RUNNER_TEMP/resource-translation-audit.md" >> "$RUNNER_TEMP/translation-audit.txt"
+          cat "$RUNNER_TEMP/update-checker-patch.md" >> "$RUNNER_TEMP/translation-audit.txt"
 
           # 将实际使用的翻译表和导入工具复制到构建源码中，便于后续接档。
           mkdir -p "$SRC_DIR/localization" "$SRC_DIR/tools/localization"
@@ -157,6 +169,8 @@ jobs:
             "$SRC_DIR/tools/localization/import_android_translations.py"
           cp "$AUTOMATION_DIR/tools/localization/prepare_build.py" \
             "$SRC_DIR/tools/localization/prepare_build.py"
+          cp "$AUTOMATION_DIR/tools/localization/patch_update_repository.py" \
+            "$SRC_DIR/tools/localization/patch_update_repository.py"
           cp "$AUTOMATION_DIR/docs/汉化自动构建说明.md" \
             "$SRC_DIR/docs_简体中文汉化自动构建说明.md"
           mkdir -p "$SRC_DIR/.github/workflows"
