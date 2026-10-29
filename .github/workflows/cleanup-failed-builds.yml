@@ -1,36 +1,34 @@
-# ============================================================
-# cleanup-failed-builds.yml — 自动清理失败的 CastleReforge 构建
-#
-# 每天执行一次：
-#   删除 build.yml 中所有已经完成且结果为 failure 的 workflow run
-#
-# 成功构建不会删除。
-# dev-auto Release 不受影响。
-# ============================================================
+# 清理 hakuX 自动汉化构建中失败的运行记录。
+# 只删除 upstream-release-zh.yml 工作流中已结束且结论为 failure 的记录；
+# 成功、取消、正在运行的记录，以及本清理工作流自身的记录都会保留。
 
-name: 清理失败的构建记录
+name: 清理失败的 hakuX 构建记录
 
 on:
+  # GitHub Actions 定时表达式使用 UTC；每天 04:00 UTC 执行。
+  # 上游 Release 检查安排在 03:17 UTC，清理任务独立运行。
   schedule:
-    # GitHub Actions cron 使用 UTC。
-    # 每周日 03:30 JST = 每周六 18:30 UTC。
-    - cron: '30 18 * * 6'
+    - cron: "0 4 * * *"
 
-    # 也允许需要时手动执行。
+  # 允许在 Actions 页面手动执行。
   workflow_dispatch:
 
 permissions:
   contents: read
   actions: write
 
+concurrency:
+  group: hakux-cleanup-failed-builds
+  cancel-in-progress: false
+
 jobs:
   cleanup:
-    name: 删除失败的 build.yml 运行记录
+    name: 删除失败的汉化构建记录
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    timeout-minutes: 10
 
     steps:
-      - name: 删除所有失败的构建记录
+      - name: 删除已失败的上游汉化构建记录
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -39,25 +37,38 @@ jobs:
           set -euo pipefail
 
           echo "[清理] 仓库：${REPO}"
-          echo "[清理] 查找 build.yml 的失败记录……"
+          echo "[清理] 目标工作流：upstream-release-zh.yml"
+          echo "[清理] 查询已完成的运行记录，并筛选结论为 failure 的记录……"
 
-          mapfile -t RUN_IDS < <(
-            gh api --paginate \
-              -H "Accept: application/vnd.github+json" \
-              "repos/${REPO}/actions/workflows/build.yml/runs?status=failure&per_page=100" \
-              --jq '.workflow_runs[].id'
-          )
+          # 先把 API 结果写入文件，确保 API 查询失败时立即终止，
+          # 避免进程替换隐藏错误后被误判为“没有失败记录”。
+          RUN_IDS_FILE="$(mktemp)"
+          trap 'rm -f "$RUN_IDS_FILE"' EXIT
 
-          if [ "${#RUN_IDS[@]}" -eq 0 ]; then
-            echo "[清理] 没有失败的构建记录。"
+          gh api --paginate \
+            -H "Accept: application/vnd.github+json" \
+            "repos/${REPO}/actions/workflows/upstream-release-zh.yml/runs?status=completed&per_page=100" \
+            --jq '.workflow_runs[] | select(.conclusion == "failure") | .id' \
+            > "$RUN_IDS_FILE"
+
+          mapfile -t RUN_IDS < "$RUN_IDS_FILE"
+
+          if [[ "${#RUN_IDS[@]}" -eq 0 ]]; then
+            echo "[清理] 没有失败的汉化构建记录。"
             exit 0
           fi
 
-          echo "[清理] 找到 ${#RUN_IDS[@]} 个失败记录。"
+          echo "[清理] 找到 ${#RUN_IDS[@]} 条失败记录。"
 
+          # 逐条删除目标工作流中已完成且失败的运行记录。
+          # 不查询其他工作流，因此不会删除成功构建或清理工作流自身的记录。
           for RUN_ID in "${RUN_IDS[@]}"; do
-            echo "[删除] workflow run ${RUN_ID}"
+            [[ "$RUN_ID" =~ ^[0-9]+$ ]] || {
+              echo "::error::发现无效的 workflow run ID：${RUN_ID}"
+              exit 1
+            }
 
+            echo "[删除] workflow run ${RUN_ID}"
             gh api \
               --method DELETE \
               -H "Accept: application/vnd.github+json" \
