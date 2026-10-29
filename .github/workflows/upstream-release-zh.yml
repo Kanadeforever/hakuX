@@ -437,6 +437,8 @@ jobs:
           ninja -C "$build_dir" hakuxcore
 
           cd "$SRC_DIR"
+          # 上游脚本可能使用 CRLF；先统一为 LF，避免回车字符被 Bash 当作 set 选项的一部分。
+          sed -i 's/\r$//' tools/native/app-libs.sh
           bash tools/native/app-libs.sh
 
       - name: 编译并验证 APK
