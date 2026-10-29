@@ -370,7 +370,6 @@ jobs:
 
           python3 "$AUTOMATION_DIR/tools/localization/prepare_build.py" \
             --root "$SRC_DIR" \
-            --upstream-tag "$UPSTREAM_TAG" \
             --keystore "$SIGNING_KEYSTORE" \
             --keystore-password "$ANDROID_KEYSTORE_PASSWORD" \
             --key-alias "$ANDROID_KEY_ALIAS" \

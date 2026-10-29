@@ -3,7 +3,7 @@
 """
 准备 hakuX 简体中文发行构建。
 
-为汉化版设置独立应用包名与上游版本号，并生成 Gradle 使用的签名配置。
+只为汉化版设置独立应用包名，并生成 Gradle 使用的签名配置。上游 versionCode 与 versionName 保持原样。
 签名密钥由 GitHub Actions Secrets 提供，不会写入源码归档或 Git 仓库。
 """
 
@@ -19,10 +19,9 @@ def write_crlf(path, content):
     path.write_text(normalized, encoding="utf-8", newline="\r\n")
 
 
-def patch_gradle(path, upstream_tag):
-    """修改 Android 应用包名与版本号。应用包名独立，版本号与汉化 Release 标签保持一致。"""
+def patch_application_id(path):
+    """只为汉化版追加独立包名后缀，不改动上游版本号或版本编码。"""
     text = path.read_text(encoding="utf-8")
-
     app_pattern = re.compile(
         r'(?m)^(\s*applicationId\s*(?:=\s*)?)(["\'])([^"\']+)(\2)'
     )
@@ -33,72 +32,18 @@ def patch_gradle(path, upstream_tag):
     current_id = app_match.group(3)
     new_id = current_id if current_id.endswith(".zhcn") else current_id + ".zhcn"
     text = app_pattern.sub(
-        lambda m: m.group(1) + m.group(2) + new_id + m.group(4),
+        lambda match: match.group(1) + match.group(2) + new_id + match.group(4),
         text,
         count=1,
     )
-
-    version_match = re.search(
-        r"(?i)^v?(\d+)\.(\d+)\.(\d+)(?:[-+].*)?$",
-        upstream_tag.strip(),
-    )
-    if not version_match:
-        raise RuntimeError(
-            f"上游标签 {upstream_tag!r} 不是标准三段式版本号，"
-            "不能安全计算 Android versionCode。"
-        )
-
-    major, minor, patch = map(int, version_match.groups())
-    if minor >= 1000 or patch >= 1000:
-        raise RuntimeError("版本号次版本或修订号超出自动编号范围。")
-    version_code = major * 1_000_000 + minor * 1_000 + patch
-    if version_code <= 0 or version_code > 2_100_000_000:
-        raise RuntimeError(f"计算出的 versionCode 超出安全范围：{version_code}")
-
-    code_patterns = [
-        re.compile(r"(?m)^(\s*versionCode\s*=\s*)\d+"),
-        re.compile(r"(?m)^(\s*versionCode\s+)\d+"),
-    ]
-    code_replaced = False
-    for pattern in code_patterns:
-        text, count = pattern.subn(
-            lambda m: m.group(1) + str(version_code),
-            text,
-            count=1,
-        )
-        if count:
-            code_replaced = True
-            break
-    if not code_replaced:
-        raise RuntimeError(f"{path} 中找不到可识别的 versionCode 声明。")
-
-    name_patterns = [
-        re.compile(r'(?m)^(\s*versionName\s*=\s*)(["\'])([^"\']*)(\2)'),
-        re.compile(r'(?m)^(\s*versionName\s+)(["\'])([^"\']*)(\2)'),
-    ]
-    name_replaced = False
-    for pattern in name_patterns:
-        text, count = pattern.subn(
-            lambda m: m.group(1) + m.group(2)
-            + upstream_tag + m.group(4),
-            text,
-            count=1,
-        )
-        if count:
-            name_replaced = True
-            break
-    if not name_replaced:
-        print(f"提示：{path} 未声明 versionName，保留上游设置。")
-
     write_crlf(path, text)
     print(f"包名：{current_id} -> {new_id}")
-    print(f"versionCode：{version_code}")
+    print("保留上游 versionCode 和 versionName，不修改应用版本元数据。")
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", required=True)
-    parser.add_argument("--upstream-tag", required=True)
     parser.add_argument("--keystore", required=True)
     parser.add_argument("--keystore-password", required=True)
     parser.add_argument("--key-alias", required=True)
@@ -115,7 +60,7 @@ def main():
     if gradle_file is None:
         raise SystemExit("找不到 android/app/build.gradle.kts 或 build.gradle。")
 
-    patch_gradle(gradle_file, args.upstream_tag)
+    patch_application_id(gradle_file)
 
     # 上游脚本若使用 Windows 专用扩展名，在 Linux NDK 环境中改用 llvm-strip。
     strip_script = root / "tools/native/app-libs.sh"
