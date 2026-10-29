@@ -365,18 +365,63 @@ jobs:
           set -euo pipefail
 
           export ANDROID_NDK_HOME="$ANDROID_HOME/ndk/29.0.14206865"
+          build_dir="$SRC_DIR/build/native/core"
+          configure_log="$RUNNER_TEMP/hakux-cmake-configure.log"
 
-          cmake \
+          mkdir -p "$build_dir"
+
+          # 同时保存 CMake 的标准输出与错误输出，便于定位配置失败原因。
+          # 如果配置失败，打印错误上下文、探测日志和关键工具链参数。
+          set +e
+          cmake --log-level=VERBOSE \
             -S "$SRC_DIR/native" \
-            -B "$SRC_DIR/build/native/core" \
+            -B "$build_dir" \
             -G Ninja \
             -DCMAKE_TOOLCHAIN_FILE="$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake" \
             -DANDROID_ABI=arm64-v8a \
             -DANDROID_PLATFORM=android-28 \
             -DCMAKE_BUILD_TYPE=Release \
-            -DNC_DEPS="$NC_DEPS"
+            -DNC_DEPS="$NC_DEPS" \
+            2>&1 | tee "$configure_log"
+          cmake_status=${PIPESTATUS[0]}
+          set -e
 
-          ninja -C "$SRC_DIR/build/native/core" hakuxcore
+          if [[ "$cmake_status" -ne 0 ]]; then
+            echo "::error::CMake 原生核心配置失败，正在输出诊断信息。"
+
+            echo "::group::CMake 配置错误摘要"
+            grep -n -B 8 -A 20 -E \
+              'CMake Error|CMake Warning|FATAL_ERROR|error:|Error at|Configuring incomplete|not found|Failed' \
+              "$configure_log" || true
+            echo "::endgroup::"
+
+            configure_detail="$build_dir/CMakeFiles/CMakeConfigureLog.yaml"
+            if [[ -f "$configure_detail" ]]; then
+              echo "::group::CMakeConfigureLog.yaml 末尾"
+              tail -n 240 "$configure_detail"
+              echo "::endgroup::"
+            fi
+
+            error_log="$build_dir/CMakeFiles/CMakeError.log"
+            if [[ -f "$error_log" ]]; then
+              echo "::group::CMakeError.log 末尾"
+              tail -n 160 "$error_log"
+              echo "::endgroup::"
+            fi
+
+            cache_file="$build_dir/CMakeCache.txt"
+            if [[ -f "$cache_file" ]]; then
+              echo "::group::关键 CMake 配置"
+              grep -E \
+                '^(ANDROID_ABI|ANDROID_PLATFORM|CMAKE_SYSTEM_NAME|CMAKE_SYSTEM_PROCESSOR|CMAKE_TOOLCHAIN_FILE|CMAKE_C_COMPILER|CMAKE_CXX_COMPILER|NC_DEPS):' \
+                "$cache_file" || true
+              echo "::endgroup::"
+            fi
+
+            exit "$cmake_status"
+          fi
+
+          ninja -C "$build_dir" hakuxcore
 
           cd "$SRC_DIR"
           bash tools/native/app-libs.sh
