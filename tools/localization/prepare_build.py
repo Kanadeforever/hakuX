@@ -20,7 +20,7 @@ def write_crlf(path, content):
 
 
 def patch_gradle(path, upstream_tag):
-    """修改 Android 应用包名和版本号，便于与官方版并行安装并支持连续更新。"""
+    """修改 Android 应用包名与版本号。应用包名独立，版本号与汉化 Release 标签保持一致。"""
     text = path.read_text(encoding="utf-8")
 
     app_pattern = re.compile(
@@ -80,7 +80,7 @@ def patch_gradle(path, upstream_tag):
     for pattern in name_patterns:
         text, count = pattern.subn(
             lambda m: m.group(1) + m.group(2)
-            + f"{upstream_tag}-zh-CN" + m.group(4),
+            + upstream_tag + m.group(4),
             text,
             count=1,
         )
