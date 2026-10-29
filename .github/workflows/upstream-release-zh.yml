@@ -3,7 +3,7 @@ name: hakuX 上游正式版简体中文发行
 on:
   # 每天北京时间 11:17 检查上游最新正式 Release。
   schedule:
-    - cron: "17 3 * * *"
+    - cron: "0 4 * * *"
   workflow_dispatch:
 
 permissions:
@@ -601,7 +601,7 @@ jobs:
             echo
             echo "## 汉化审查"
             echo
-            echo "详见附件 \`translation-audit.txt\`。首版词条为部分汉化，未匹配内容需要后续补译。"
+            echo "详见附件 \`translation-audit.txt\`：包含字典未匹配词条及扫描到的未翻译静态界面文案候选。未翻译候选不会阻止发行；动态文本和原生文案仍需人工审查。"
           } > "$notes"
 
           cp "$RUNNER_TEMP/translation-audit.txt" "$assets/translation-audit.txt"
