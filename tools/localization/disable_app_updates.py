@@ -206,7 +206,7 @@ def patch_source(path: Path, root: Path) -> tuple[list[str], list[str]]:
         name = match.group(1)
         strongly_related = bool(UPDATE_FUNCTION_RE.search(name))
         related_file_helper = path_is_updater and bool(
-            re.search(r"(?i)^(check|fetch|get|load|find|query|request|refresh|latest|show|display|present|open)", name)
+            re.search(r"(?i)^(check|fetch|get|load|find|query|request|refresh|latest|show|display|present)", name)
         )
         if not strongly_related and not related_file_helper:
             continue
