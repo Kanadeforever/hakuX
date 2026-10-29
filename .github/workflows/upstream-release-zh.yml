@@ -227,6 +227,64 @@ jobs:
             git -C "$destination" checkout --detach "$ref"
           }
 
+          # 该依赖有时会固定到当前远程分支不再包含的历史提交。
+          # 先尝试 Git 获取；如果 Git 对象不可用，则下载同一提交的源码归档。
+          # 这个备用流程仅用于不需要后续 Git 操作的 nv2a_vsh_cpu。
+          clone_nv2a_or_archive() {
+            local url="$1"
+            local ref="$2"
+            local destination="$3"
+            local repo_slug="${url#https://github.com/}"
+            local archive="$RUNNER_TEMP/nv2a_vsh_cpu.tar.gz"
+            local fetch_log="$RUNNER_TEMP/nv2a_vsh_cpu-fetch.log"
+            local resolved_ref="$ref"
+
+            repo_slug="${repo_slug%.git}"
+            mkdir -p "$(dirname "$destination")"
+
+            # 先按正常方式克隆，确保提交仍可通过远程 Git 历史取得时保留完整仓库。
+            if git clone --filter=blob:none --no-checkout "$url" "$destination"; then
+              if git -C "$destination" cat-file -e "${ref}^{commit}" 2>/dev/null; then
+                git -C "$destination" checkout --detach "$ref"
+                return 0
+              fi
+
+              # 对象不在本地时，直接请求固定提交；远程服务器可能仍允许按提交号获取。
+              if git -C "$destination" fetch --filter=blob:none origin "$ref" >"$fetch_log" 2>&1; then
+                git -C "$destination" checkout --detach FETCH_HEAD
+                return 0
+              fi
+            fi
+
+            echo "::notice::固定提交 $ref 无法通过 Git 历史取得，改用 GitHub 源码归档。"
+            rm -rf "$destination"
+            mkdir -p "$destination"
+
+            # GitHub 的归档服务可以按提交号提供源码，不要求提交对象存在于当前克隆历史中。
+            if ! curl -fLsS --retry 3 --retry-delay 2 \
+              "https://codeload.github.com/${repo_slug}/tar.gz/${ref}" \
+              -o "$archive"; then
+              echo "::notice::短提交号归档不可用，尝试通过 GitHub API 解析完整提交号。"
+              resolved_ref="$(curl -fLsS --retry 3 \
+                -H "Accept: application/vnd.github+json" \
+                -H "X-GitHub-Api-Version: 2022-11-28" \
+                "https://api.github.com/repos/${repo_slug}/commits/${ref}" \
+                | python3 -c 'import json, sys; print(json.load(sys.stdin)["sha"])')"
+              curl -fLsS --retry 3 --retry-delay 2 \
+                "https://codeload.github.com/${repo_slug}/tar.gz/${resolved_ref}" \
+                -o "$archive"
+            fi
+
+            # 先检查压缩包是否完整，再将 GitHub 自动生成的顶层目录去掉。
+            tar -tzf "$archive" >/dev/null
+            tar -xzf "$archive" --strip-components=1 -C "$destination"
+            if [[ -z "$(find "$destination" -mindepth 1 -maxdepth 1 -print -quit)" ]]; then
+              echo "::error::依赖源码归档为空：${repo_slug} @ ${ref}"
+              exit 1
+            fi
+            echo "[依赖] 已取得源码归档：${repo_slug} @ ${resolved_ref}"
+          }
+
           mkdir -p "$NC_DEPS"
 
           clone_at https://github.com/zeux/volk.git \
@@ -241,7 +299,7 @@ jobs:
             "$SDL3_REF" "$NC_DEPS/SDL3"
           clone_at https://github.com/bylaws/libadrenotools.git \
             "$ADRENOTOOLS_REF" "$NC_DEPS/adrenotools"
-          clone_at https://github.com/xemu-project/nv2a_vsh_cpu.git \
+          clone_nv2a_or_archive https://github.com/xemu-project/nv2a_vsh_cpu.git \
             "$NV2A_VSH_CPU_REF" "$NC_DEPS/root/subprojects/nv2a_vsh_cpu"
 
           patch_file="$SRC_DIR/tools/native/adrenotools-kgsl-context-priority.patch"
