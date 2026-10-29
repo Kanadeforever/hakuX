@@ -325,6 +325,14 @@ def main():
         if value in translations:
             existing_resource_translations[key] = translations[value]
 
+    # 统计已经由资源 ID 翻译表写入的中文资源。
+    # 这些译文必须优先于通用英文词条映射，避免后者覆盖人工润色过的完整句子。
+    existing_resource_id_translations = {
+        key: value
+        for key, value in existing_zh_strings.items()
+        if key in default_strings and value and value != default_strings[key]
+    }
+
     # 默认资源中没有字典译文、也没有现成中文覆盖的英文字符串需要人工检查。
     untranslated_resources = collect_untranslated_resources(
         default_strings, existing_zh_strings, translations
@@ -332,6 +340,9 @@ def main():
 
     base_updates = {}
     zh_updates = dict(existing_resource_translations)
+
+    # 已有的资源 ID 译文优先级更高；只有与默认原文不同的内容才视为已翻译。
+    zh_updates.update(existing_resource_id_translations)
 
     for literal in sorted(matched_literals):
         key = literal_to_key[literal]
@@ -347,7 +358,9 @@ def main():
 
     register_locale(root)
 
-    total_hits = len(matched_literals) + len(existing_resource_translations)
+    # 资源 ID 翻译表的有效命中也算作汉化命中，避免词条已导入时被误判为纯英文版本。
+    total_resource_hits = len(set(existing_resource_translations) | set(existing_resource_id_translations))
+    total_hits = len(matched_literals) + total_resource_hits
     unused = sorted(set(translations) - matched_literals - {
         value for value in default_strings.values() if value in translations
     })
@@ -357,6 +370,7 @@ def main():
         "",
         f"- 命中的 Compose 静态文案：{len(matched_literals)} 项",
         f"- 命中的原有字符串资源：{len(existing_resource_translations)} 项",
+        f"- 已存在的资源 ID 中文译文：{len(existing_resource_id_translations)} 项",
         f"- 修改的 Kotlin 文件：{len(changed_files)} 个",
         f"- 词条字典总数：{len(translations)} 项",
         f"- 字典中未匹配上游的词条：{len(unused)} 项",

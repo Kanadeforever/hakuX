@@ -1,0 +1,1431 @@
+{
+  "schema_version": 1,
+  "locale": "zh-rCN",
+  "description": "hakuX Android 字符串资源简体中文翻译。以资源 ID 作为稳定键；source 用于检测上游文案变化，translation 为简体中文译文。",
+  "resources": {
+    "controllers_auto": {
+      "source": "Automatic: the next controller connected",
+      "translation": "自动：连接下一个控制器"
+    },
+    "controllers_auto_is": {
+      "source": "Automatic: %1$s",
+      "translation": "自动：%1$s"
+    },
+    "controllers_capture": {
+      "source": "Press a button, or move a stick or trigger, on %1$s.",
+      "translation": "请在 %1$s 上按下任意按钮，或移动摇杆、扳机。"
+    },
+    "controllers_capture_stick": {
+      "source": "Push the stick on %1$s right (for a horizontal axis) or up (for a vertical one).",
+      "translation": "将 %1$s 上的摇杆向右推（水平轴）或向上推（垂直轴）。"
+    },
+    "controllers_connected": {
+      "source": "Connected controllers",
+      "translation": "已连接的控制器"
+    },
+    "controllers_deadzone_l": {
+      "source": "Left stick dead zone",
+      "translation": "左摇杆死区"
+    },
+    "controllers_deadzone_r": {
+      "source": "Right stick dead zone",
+      "translation": "右摇杆死区"
+    },
+    "controllers_desc": {
+      "source": "Up to four controllers, as on the Xbox. A game uses these settings when it starts; its menu (Controllers) changes the players while it runs.",
+      "translation": "最多支持四个控制器，与 Xbox 相同。游戏启动时会使用这里的设置；游戏运行期间，可通过游戏内的“控制器”菜单调整玩家分配。"
+    },
+    "controllers_gone": {
+      "source": "This controller is no longer connected.",
+      "translation": "此控制器已断开连接。"
+    },
+    "controllers_inputs": {
+      "source": "Xbox controller",
+      "translation": "Xbox 控制器"
+    },
+    "controllers_map_default": {
+      "source": "default buttons",
+      "translation": "默认按键"
+    },
+    "controllers_map_model": {
+      "source": "buttons of this model",
+      "translation": "此型号的按键"
+    },
+    "controllers_map_unit": {
+      "source": "its own buttons",
+      "translation": "此控制器自己的按键"
+    },
+    "controllers_mapping_title": {
+      "source": "Controller buttons",
+      "translation": "控制器按键"
+    },
+    "controllers_none": {
+      "source": "No controller connected",
+      "translation": "未连接控制器"
+    },
+    "controllers_not_connected": {
+      "source": "%1$s (not connected)",
+      "translation": "%1$s（未连接）"
+    },
+    "controllers_not_playing": {
+      "source": "Not playing",
+      "translation": "未使用"
+    },
+    "controllers_off": {
+      "source": "Off: no controller plugged in",
+      "translation": "关闭：未连接控制器"
+    },
+    "controllers_own": {
+      "source": "Only this controller",
+      "translation": "仅此控制器"
+    },
+    "controllers_own_desc": {
+      "source": "Give this controller buttons of its own instead of every controller of its model. Identical wired controllers can trade them when they are connected in another order.",
+      "translation": "为此控制器单独分配按键，而不是与同型号的所有控制器共用。相同型号的有线控制器如果以不同顺序连接，可能会交换分配。"
+    },
+    "controllers_player": {
+      "source": "Player %1$d",
+      "translation": "玩家 %1$d"
+    },
+    "controllers_players": {
+      "source": "Players",
+      "translation": "玩家"
+    },
+    "controllers_reset_desc": {
+      "source": "Back to the default buttons, or to the model\\'s mapping for this controller\\'s own",
+      "translation": "恢复默认按键，或恢复此控制器所属型号的按键映射"
+    },
+    "controllers_settings_desc": {
+      "source": "Which controller plays as which of the four players, and each controller\\'s buttons.",
+      "translation": "设置四名玩家分别使用哪个控制器，以及每个控制器的按键映射。"
+    },
+    "controllers_sticks": {
+      "source": "Sticks and triggers",
+      "translation": "摇杆和扳机"
+    },
+    "controllers_swap_face": {
+      "source": "Swap A/B and X/Y",
+      "translation": "交换 A/B 和 X/Y"
+    },
+    "controllers_test": {
+      "source": "Test",
+      "translation": "测试"
+    },
+    "controllers_test_idle": {
+      "source": "Press buttons or move the sticks. The test stops after a few seconds without input.",
+      "translation": "按下按钮或移动摇杆。若数秒内没有输入，测试会自动停止。"
+    },
+    "controllers_test_off": {
+      "source": "Select to try this controller here. While it is tested, its buttons don\\'t move around this screen.",
+      "translation": "选择此项可在这里测试控制器。测试期间，控制器按键不会操作此界面。"
+    },
+    "controllers_threshold": {
+      "source": "Press point of a trigger or stick used as a button",
+      "translation": "将扳机或摇杆的哪个触发位置视为按钮按下"
+    },
+    "controllers_title": {
+      "source": "Physical controllers",
+      "translation": "实体控制器"
+    },
+    "controllers_unbound": {
+      "source": "Not set",
+      "translation": "未设置"
+    },
+    "game_settings_desc": {
+      "source": "These apply to this game only; the others follow the app\\'s settings. Changes take effect at the game\\'s next start.",
+      "translation": "这些设置仅适用于此游戏；其他游戏沿用应用设置。更改将在下次启动游戏时生效。"
+    },
+    "game_settings_global": {
+      "source": "App setting: %1$s",
+      "translation": "应用设置：%1$s"
+    },
+    "game_settings_this_game": {
+      "source": "%1$s, for this game",
+      "translation": "%1$s（仅此游戏）"
+    },
+    "game_settings_use_global": {
+      "source": "Use the app setting (%1$s)",
+      "translation": "使用应用设置（%1$s）"
+    },
+    "gpu_driver_add": {
+      "source": "Add a driver",
+      "translation": "添加驱动"
+    },
+    "gpu_driver_add_desc": {
+      "source": "A driver package: a ZIP with a meta.json, such as a Turnip release. A package with the same file name is replaced.",
+      "translation": "驱动程序包是包含 meta.json 的 ZIP 文件，例如 Turnip 驱动发行包。若文件名相同，将替换已有的程序包。"
+    },
+    "gpu_driver_added": {
+      "source": "%1$s added and selected. It takes effect at the next game start.",
+      "translation": "已添加并选中 %1$s。将在下次启动游戏时生效。"
+    },
+    "gpu_driver_by": {
+      "source": "by %1$s",
+      "translation": "作者：%1$s"
+    },
+    "gpu_driver_delete": {
+      "source": "Delete driver",
+      "translation": "删除驱动"
+    },
+    "gpu_driver_delete_text": {
+      "source": "%1$s will be deleted from the phone.",
+      "translation": "将从手机中删除 %1$s。"
+    },
+    "gpu_driver_delete_text_in_use": {
+      "source": "%1$s will be deleted from the phone, and hakuX goes back to the system driver.",
+      "translation": "将从手机中删除 %1$s，hakuX 将切回系统驱动。"
+    },
+    "gpu_driver_deleted": {
+      "source": "%1$s deleted.",
+      "translation": "已删除 %1$s。"
+    },
+    "gpu_driver_deleted_in_use": {
+      "source": "%1$s deleted. The system driver is in use again.",
+      "translation": "已删除 %1$s。现在重新使用系统驱动。"
+    },
+    "gpu_driver_desc": {
+      "source": "The Vulkan driver hakuX draws the Xbox\\'s graphics with. A Turnip driver (Mesa\\'s driver for Adreno GPUs) can be more accurate and faster than the one that came with the phone. A change takes effect at the next game start.",
+      "translation": "hakuX 用于渲染 Xbox 图像的 Vulkan 驱动。Turnip 是 Mesa 为 Adreno GPU 提供的驱动，准确性和速度可能优于手机自带驱动。更改将在下次启动游戏时生效。"
+    },
+    "gpu_driver_err_api": {
+      "source": "That driver needs Android API level %1$d. This phone has %2$d.",
+      "translation": "此驱动需要 Android API 级别 %1$d；当前手机为 %2$d。"
+    },
+    "gpu_driver_err_no_library": {
+      "source": "That package doesn\\'t contain the driver library its meta.json names.",
+      "translation": "此程序包缺少其 meta.json 中指定的驱动库。"
+    },
+    "gpu_driver_err_not_driver": {
+      "source": "That file isn\\'t a driver package: it has no meta.json.",
+      "translation": "此文件不是驱动程序包：其中没有 meta.json。"
+    },
+    "gpu_driver_err_unpack": {
+      "source": "%1$s couldn\\'t be unpacked. The driver in use stays.",
+      "translation": "无法解压 %1$s。当前使用的驱动保持不变。"
+    },
+    "gpu_driver_err_unreadable": {
+      "source": "That file couldn\\'t be read.",
+      "translation": "无法读取此文件。"
+    },
+    "gpu_driver_no_package": {
+      "source": "In use. Its package isn\\'t on this phone anymore.",
+      "translation": "正在使用此驱动，但手机上已不存在对应的程序包。"
+    },
+    "gpu_driver_section": {
+      "source": "Drivers",
+      "translation": "驱动"
+    },
+    "gpu_driver_selected": {
+      "source": "%1$s selected. It takes effect at the next game start.",
+      "translation": "已选中 %1$s。将在下次启动游戏时生效。"
+    },
+    "gpu_driver_system_choice": {
+      "source": "System driver",
+      "translation": "系统驱动"
+    },
+    "gpu_driver_system_desc": {
+      "source": "The driver that came with the phone",
+      "translation": "手机自带的驱动"
+    },
+    "gpu_driver_system_selected": {
+      "source": "System driver selected. It takes effect at the next game start.",
+      "translation": "已选中系统驱动。将在下次启动游戏时生效。"
+    },
+    "gpu_driver_version": {
+      "source": "Version %1$s",
+      "translation": "版本 %1$s"
+    },
+    "hdd_backing_up": {
+      "source": "Backing up",
+      "translation": "正在备份"
+    },
+    "hdd_backup": {
+      "source": "Backup",
+      "translation": "备份"
+    },
+    "hdd_backup_caches": {
+      "source": "Cache drives (%1$s)",
+      "translation": "缓存盘（%1$s）"
+    },
+    "hdd_backup_caches_desc": {
+      "source": "Games fill them again when they need to.",
+      "translation": "游戏需要时会自动重新填充缓存盘。"
+    },
+    "hdd_backup_done": {
+      "source": "Backup made",
+      "translation": "备份已创建"
+    },
+    "hdd_backup_failed": {
+      "source": "The backup couldn\\'t be made",
+      "translation": "无法创建备份"
+    },
+    "hdd_backup_file": {
+      "source": "hakuX backup %1$s",
+      "translation": "hakuX 备份 %1$s"
+    },
+    "hdd_backup_go": {
+      "source": "Back up",
+      "translation": "备份"
+    },
+    "hdd_backup_make": {
+      "source": "Back up everything",
+      "translation": "备份全部数据"
+    },
+    "hdd_backup_make_desc": {
+      "source": "One zip with all of this console\\'s data: game saves, game data, system files and settings, and the savestates. To keep, or to restore on another hakuX.",
+      "translation": "将此主机的所有数据打包为一个 ZIP：游戏存档、游戏数据、系统文件与设置，以及即时存档。可用于留存，或恢复到另一台 hakuX。"
+    },
+    "hdd_backup_not": {
+      "source": "This file isn\\'t a hakuX backup.",
+      "translation": "此文件不是 hakuX 备份。"
+    },
+    "hdd_backup_states": {
+      "source": "Savestates (%1$s)",
+      "translation": "即时存档（%1$s）"
+    },
+    "hdd_cache_clear_desc": {
+      "source": "Drive %1$s will be emptied. A savestate that uses it brings its copy back when it loads.",
+      "translation": "磁盘 %1$s 将被清空。使用该磁盘的即时存档在载入时会恢复其中的数据副本。"
+    },
+    "hdd_cache_clear_title": {
+      "source": "Clear this cache drive?",
+      "translation": "清空此缓存盘？"
+    },
+    "hdd_cache_drive": {
+      "source": "Drive %1$s",
+      "translation": "磁盘 %1$s"
+    },
+    "hdd_cache_empty": {
+      "source": "Empty",
+      "translation": "空"
+    },
+    "hdd_caches": {
+      "source": "Cache drives",
+      "translation": "缓存盘"
+    },
+    "hdd_caches_desc": {
+      "source": "Games copy disc data to X, Y and Z to load faster. A cleared drive is filled again the next time a game needs it.",
+      "translation": "游戏会将光盘数据复制到 X、Y 和 Z 盘以加快读取速度。清空后，下次游戏需要时会重新填充。"
+    },
+    "hdd_console_bad": {
+      "source": "That file can\\'t be used: %1$s",
+      "translation": "无法使用此文件：%1$s"
+    },
+    "hdd_console_bios": {
+      "source": "BIOS",
+      "translation": "BIOS"
+    },
+    "hdd_console_bios_bad": {
+      "source": "Its keys don\\'t read: it needs to be a BIOS for the MCPX 1.0 boot ROM",
+      "translation": "无法读取其中的密钥：需要用于 MCPX 1.0 启动 ROM 的 BIOS。"
+    },
+    "hdd_console_eeprom_bad": {
+      "source": "Its keys don\\'t read: not an Xbox EEPROM",
+      "translation": "无法读取其中的密钥：这不是 Xbox EEPROM。"
+    },
+    "hdd_console_mcpx": {
+      "source": "MCPX 1.0 boot ROM",
+      "translation": "MCPX 1.0 启动 ROM"
+    },
+    "hdd_console_needed": {
+      "source": "Set the console files first (From an Xbox or xemu).",
+      "translation": "请先设置主机文件（来自 Xbox 或 xemu）。"
+    },
+    "hdd_console_read": {
+      "source": "Set: its keys read",
+      "translation": "已设置：成功读取密钥"
+    },
+    "hdd_console_set": {
+      "source": "Set",
+      "translation": "已设置"
+    },
+    "hdd_console_unset": {
+      "source": "Not set",
+      "translation": "未设置"
+    },
+    "hdd_desc": {
+      "source": "What the emulated Xbox keeps on its hard disk, and the savestates beside it. Deleting a save is like deleting it in the Xbox dashboard.",
+      "translation": "这里存放模拟 Xbox 的硬盘内容及相关即时存档。删除存档的效果与在 Xbox 系统界面中删除相同。"
+    },
+    "hdd_import": {
+      "source": "Import a disk image",
+      "translation": "导入磁盘映像"
+    },
+    "hdd_import_confirm": {
+      "source": "Everything on this console\\'s hard disk is replaced by the image\\'s contents. Back it up first (Back up everything) to keep a copy.",
+      "translation": "此主机硬盘上的所有内容都将被映像文件替换。请先执行“备份全部数据”以保留副本。"
+    },
+    "hdd_import_confirm_title": {
+      "source": "Replace the hard disk?",
+      "translation": "替换硬盘？"
+    },
+    "hdd_import_desc": {
+      "source": "xemu\\'s (qcow2) or a raw dump. It replaces this console\\'s saves, game data, caches and system files; its saves are re-signed for hakuX.",
+      "translation": "支持 xemu 的 qcow2 映像或原始磁盘转储。导入后，此主机的存档、游戏数据、缓存和系统文件都会被替换；存档会重新签名以供 hakuX 使用。"
+    },
+    "hdd_import_done": {
+      "source": "Disk image imported",
+      "translation": "磁盘映像已导入"
+    },
+    "hdd_import_failed": {
+      "source": "The image couldn\\'t be imported",
+      "translation": "无法导入磁盘映像"
+    },
+    "hdd_import_needs": {
+      "source": "Needs the three console files above.",
+      "translation": "需要先设置上方列出的三个主机文件。"
+    },
+    "hdd_import_replace": {
+      "source": "Replace",
+      "translation": "替换"
+    },
+    "hdd_importing": {
+      "source": "Importing the disk image",
+      "translation": "正在导入磁盘映像"
+    },
+    "hdd_previous": {
+      "source": "The previous version\\'s disk image",
+      "translation": "旧版本的磁盘映像"
+    },
+    "hdd_previous_delete": {
+      "source": "Delete the previous version\\'s disk image?",
+      "translation": "删除旧版本的磁盘映像？"
+    },
+    "hdd_previous_delete_desc": {
+      "source": "Its saves and game data are on this console\\'s disk already.",
+      "translation": "其中的存档和游戏数据已经迁移到此主机的硬盘中。"
+    },
+    "hdd_previous_desc": {
+      "source": "Already brought over to this console\\'s disk: %1$s",
+      "translation": "已迁移到此主机硬盘：%1$s"
+    },
+    "hdd_resign_nokey": {
+      "source": "Not re-signed, their games aren\\'t in the library: %1$s.",
+      "translation": "未重新签名，相关游戏也未出现在游戏库中：%1$s。"
+    },
+    "hdd_resigning": {
+      "source": "Re-signing the saves",
+      "translation": "正在重新签名存档"
+    },
+    "hdd_restore": {
+      "source": "Restore a backup",
+      "translation": "恢复备份"
+    },
+    "hdd_restore_caches": {
+      "source": "It has no cache drives: the ones here stay.",
+      "translation": "备份中没有缓存盘；当前缓存盘将保留。"
+    },
+    "hdd_restore_confirm": {
+      "source": "Everything on this console\\'s disk is replaced by the backup made %1$s.",
+      "translation": "此主机硬盘上的所有内容都将替换为创建于 %1$s 的备份。"
+    },
+    "hdd_restore_desc": {
+      "source": "Puts back everything a hakuX backup holds, in place of what\\'s on this console now.",
+      "translation": "用 hakuX 备份中的所有内容替换此主机当前的数据。"
+    },
+    "hdd_restore_done": {
+      "source": "Backup restored",
+      "translation": "备份已恢复"
+    },
+    "hdd_restore_failed": {
+      "source": "The backup couldn\\'t be restored",
+      "translation": "无法恢复备份"
+    },
+    "hdd_restore_go": {
+      "source": "Restore",
+      "translation": "恢复"
+    },
+    "hdd_restore_no_states": {
+      "source": "It has no savestates: the ones here stay.",
+      "translation": "备份中没有即时存档；当前即时存档将保留。"
+    },
+    "hdd_restore_states": {
+      "source": "Its savestates replace the ones here.",
+      "translation": "备份中的即时存档将替换当前即时存档。"
+    },
+    "hdd_restore_title": {
+      "source": "Restore this backup?",
+      "translation": "恢复此备份？"
+    },
+    "hdd_restoring": {
+      "source": "Restoring the backup",
+      "translation": "正在恢复备份"
+    },
+    "hdd_save_delete": {
+      "source": "Delete this save?",
+      "translation": "删除此存档？"
+    },
+    "hdd_save_delete_desc": {
+      "source": "“%1$s” will be deleted. This can\\'t be undone.",
+      "translation": "将删除“%1$s”。此操作无法撤销。"
+    },
+    "hdd_save_export": {
+      "source": "Export this save",
+      "translation": "导出此存档"
+    },
+    "hdd_saves": {
+      "source": "Game saves",
+      "translation": "游戏存档"
+    },
+    "hdd_saves_delete_all": {
+      "source": "Delete all saves",
+      "translation": "删除所有存档"
+    },
+    "hdd_saves_delete_all_desc": {
+      "source": "Every save of %1$s will be deleted. This can\\'t be undone.",
+      "translation": "将删除 %1$s 的所有存档。此操作无法撤销。"
+    },
+    "hdd_saves_export": {
+      "source": "Export saves",
+      "translation": "导出存档"
+    },
+    "hdd_saves_export_all": {
+      "source": "Export all saves",
+      "translation": "导出全部存档"
+    },
+    "hdd_saves_export_all_desc": {
+      "source": "A zip laid out like the Xbox\\'s E:\\\\UDATA folder, to keep or to copy to a console. The saves are signed with this emulator\\'s keys, so on a console or in xemu a game may report them as damaged.",
+      "translation": "生成目录结构与 Xbox 的 E:\\\\UDATA 相同的 ZIP，可用于保存或复制到主机。存档使用此模拟器的密钥签名，因此在实体主机或 xemu 中可能会被游戏判定为损坏。"
+    },
+    "hdd_saves_export_all_file": {
+      "source": "Xbox saves",
+      "translation": "Xbox 存档"
+    },
+    "hdd_saves_export_failed": {
+      "source": "The saves couldn\\'t be exported: %1$s",
+      "translation": "无法导出存档：%1$s"
+    },
+    "hdd_saves_import": {
+      "source": "Import saves",
+      "translation": "导入存档"
+    },
+    "hdd_saves_import_desc": {
+      "source": "From a zip of Xbox saves: one exported here, or a console\\'s E:\\\\UDATA folders.",
+      "translation": "从 Xbox 存档 ZIP 导入：可以是从此处导出的文件，也可以是主机的 E:\\\\UDATA 文件夹。"
+    },
+    "hdd_saves_import_failed": {
+      "source": "The saves couldn\\'t be imported: %1$s",
+      "translation": "无法导入存档：%1$s"
+    },
+    "hdd_saves_import_foreign": {
+      "source": "They come from a console or xemu: they\\'re re-signed for hakuX.",
+      "translation": "这些存档来自实体主机或 xemu，将重新签名以供 hakuX 使用。"
+    },
+    "hdd_saves_import_foreign_nokeys": {
+      "source": "They come from a console or xemu. Without the console files (From an Xbox or xemu) they come in as they are, and games that check signatures report them as damaged.",
+      "translation": "这些存档来自实体主机或 xemu。若未设置主机文件（来自 Xbox 或 xemu），将按原样导入；检查签名的游戏可能会将其判定为损坏。"
+    },
+    "hdd_saves_import_none": {
+      "source": "No Xbox saves in this file.",
+      "translation": "此文件中没有 Xbox 存档。"
+    },
+    "hdd_saves_import_title": {
+      "source": "Import saves?",
+      "translation": "导入存档？"
+    },
+    "hdd_saves_none": {
+      "source": "No game saves yet.",
+      "translation": "尚无游戏存档。"
+    },
+    "hdd_settings_desc": {
+      "source": "Game saves, game data, cache drives and savestates; backups; an Xbox\\'s or xemu\\'s data brought in.",
+      "translation": "管理游戏存档、游戏数据、缓存盘和即时存档；创建备份，或导入实体 Xbox/xemu 的数据。"
+    },
+    "hdd_space": {
+      "source": "Space used",
+      "translation": "已用空间"
+    },
+    "hdd_space_caches": {
+      "source": "Cache drives",
+      "translation": "缓存盘"
+    },
+    "hdd_space_saves": {
+      "source": "Game saves",
+      "translation": "游戏存档"
+    },
+    "hdd_space_states": {
+      "source": "Savestates",
+      "translation": "即时存档"
+    },
+    "hdd_space_system": {
+      "source": "System files",
+      "translation": "系统文件"
+    },
+    "hdd_space_title_data": {
+      "source": "Game data",
+      "translation": "游戏数据"
+    },
+    "hdd_states": {
+      "source": "Savestates",
+      "translation": "即时存档"
+    },
+    "hdd_states_delete": {
+      "source": "Delete these savestates?",
+      "translation": "删除这些即时存档？"
+    },
+    "hdd_states_delete_desc": {
+      "source": "Every savestate of %1$s will be deleted.",
+      "translation": "将删除 %1$s 的所有即时存档。"
+    },
+    "hdd_title": {
+      "source": "Xbox hard disk",
+      "translation": "Xbox 硬盘"
+    },
+    "hdd_title_data": {
+      "source": "Game data",
+      "translation": "游戏数据"
+    },
+    "hdd_title_data_delete": {
+      "source": "Delete this game\\'s data?",
+      "translation": "删除此游戏的数据？"
+    },
+    "hdd_title_data_delete_desc": {
+      "source": "%1$s\\'s data (its settings and downloaded content) will be deleted.",
+      "translation": "将删除 %1$s 的数据（设置和下载的内容）。"
+    },
+    "hdd_title_id": {
+      "source": "Title %1$s",
+      "translation": "标题 %1$s"
+    },
+    "hdd_xbox": {
+      "source": "From an Xbox or xemu",
+      "translation": "来自 Xbox 或 xemu"
+    },
+    "hdd_xbox_desc": {
+      "source": "A console\\'s or xemu\\'s saves are signed with that console\\'s keys. hakuX re-signs them for itself with the keys read from your own dumps, which stay in this app: the MCPX boot ROM and the BIOS, and that console\\'s EEPROM (xemu\\'s eeprom.bin).",
+      "translation": "实体主机或 xemu 的存档使用对应主机的密钥签名。hakuX 会使用你提供的转储文件中的密钥重新签名，以便在本应用中使用。所需文件会保存在应用内：MCPX 启动 ROM、BIOS，以及该主机的 EEPROM（xemu 的 eeprom.bin）。"
+    },
+    "library_convert_action": {
+      "source": "Convert",
+      "translation": "转换"
+    },
+    "library_convert_done": {
+      "source": "%1$s is ready. The original ISO is in the \\\"%2$s\\\" folder.",
+      "translation": "%1$s 已准备就绪。原始 ISO 位于“%2$s”文件夹中。"
+    },
+    "library_convert_done_kept": {
+      "source": "%1$s is ready. The original ISO couldn\\'t be moved and stays where it was.",
+      "translation": "%1$s 已准备就绪。无法移动原始 ISO，文件仍保留在原位置。"
+    },
+    "library_convert_done_title": {
+      "source": "Converted",
+      "translation": "转换完成"
+    },
+    "library_convert_message": {
+      "source": "%1$s becomes %2$s beside it: the game without the DVD\\'s video partition and padding, so smaller. The original ISO then moves into the \\\"%3$s\\\" folder.",
+      "translation": "将在旁边生成 %2$s（对应 %1$s）：移除 DVD 视频分区和填充数据后的游戏镜像，体积更小。随后原始 ISO 会移动到“%3$s”文件夹。"
+    },
+    "library_convert_progress": {
+      "source": "%1$s of %2$s",
+      "translation": "%1$s / %2$s"
+    },
+    "library_convert_title": {
+      "source": "Convert to XISO?",
+      "translation": "转换为 XISO？"
+    },
+    "library_converting": {
+      "source": "Converting to XISO",
+      "translation": "正在转换为 XISO"
+    },
+    "library_empty_games": {
+      "source": "No supported games found in this folder.",
+      "translation": "此文件夹中没有找到受支持的游戏。"
+    },
+    "library_load_state_title": {
+      "source": "Load state: %1$s",
+      "translation": "载入即时存档：%1$s"
+    },
+    "library_loading_discs": {
+      "source": "Reading discs: %1$d of %2$d",
+      "translation": "正在读取光盘：%1$d / %2$d"
+    },
+    "library_loading_games": {
+      "source": "Loading games",
+      "translation": "正在加载游戏"
+    },
+    "library_menu_convert": {
+      "source": "Convert to XISO",
+      "translation": "转换为 XISO"
+    },
+    "library_menu_mods": {
+      "source": "Mods & cheats",
+      "translation": "模组与金手指"
+    },
+    "migrate_bios_body": {
+      "source": "The new core doesn\\'t need it to run games. It\\'s kept to bring in an Xbox\\'s or xemu\\'s saves (Settings, Xbox hard disk).",
+      "translation": "新核心运行游戏不再需要它。保留此文件是为了导入实体 Xbox 或 xemu 的存档（设置 → Xbox 硬盘）。"
+    },
+    "migrate_bios_title": {
+      "source": "BIOS",
+      "translation": "BIOS"
+    },
+    "migrate_done": {
+      "source": "Your data is here.",
+      "translation": "数据已迁移到此处。"
+    },
+    "migrate_driver_kept": {
+      "source": "%1$s, as before.",
+      "translation": "保持原设置：%1$s。"
+    },
+    "migrate_driver_system": {
+      "source": "The system\\'s driver, as before.",
+      "translation": "保持使用系统驱动。"
+    },
+    "migrate_failed": {
+      "source": "The hard disk couldn\\'t be brought over: %1$s",
+      "translation": "无法迁移硬盘数据：%1$s"
+    },
+    "migrate_folder_lost": {
+      "source": "The previous version\\'s folder can\\'t be reached any more: you\\'ll pick one next.",
+      "translation": "无法再访问旧版本的文件夹；请重新选择。"
+    },
+    "migrate_hdd_bring": {
+      "source": "Bring the saves and game data over",
+      "translation": "迁移存档和游戏数据"
+    },
+    "migrate_hdd_image": {
+      "source": "The previous version\\'s disk image (%1$s).",
+      "translation": "旧版本的磁盘映像（%1$s）。"
+    },
+    "migrate_hdd_nokeys": {
+      "source": "The previous version\\'s BIOS or EEPROM can\\'t be read: its saves come over as they are, and games that check their signatures may report them as damaged.",
+      "translation": "无法读取旧版本的 BIOS 或 EEPROM。存档将按原样迁移，检查签名的游戏可能会将其判定为损坏。"
+    },
+    "migrate_hdd_resign": {
+      "source": "Its saves are re-signed for the new core with the previous version\\'s BIOS and EEPROM.",
+      "translation": "将使用旧版本的 BIOS 和 EEPROM 为新核心重新签名存档。"
+    },
+    "migrate_hdd_title": {
+      "source": "Xbox hard disk",
+      "translation": "Xbox 硬盘"
+    },
+    "migrate_retry": {
+      "source": "Try again",
+      "translation": "重试"
+    },
+    "migrate_running": {
+      "source": "Bringing your data over…",
+      "translation": "正在迁移数据…"
+    },
+    "migrate_subtitle": {
+      "source": "Games now run on hakuX\\'s own core instead of xemu\\'s. What the previous version kept comes along.",
+      "translation": "游戏现在由 hakuX 自带的核心运行，而不是 xemu。旧版本保存的数据也会一并迁移。"
+    },
+    "migrate_title": {
+      "source": "hakuX has a new core",
+      "translation": "hakuX 已换用新核心"
+    },
+    "mods_by": {
+      "source": "by %1$s",
+      "translation": "作者：%1$s"
+    },
+    "mods_cheats_desc": {
+      "source": "Cheats can also be turned on and off from the in-game menu.",
+      "translation": "也可以在游戏内菜单中启用或关闭金手指。"
+    },
+    "mods_mods_desc": {
+      "source": "Mods change the game\\'s files. A change takes effect the next time the game starts.",
+      "translation": "模组会修改游戏文件。更改将在下次启动游戏时生效。"
+    },
+    "mods_none": {
+      "source": "This disc has no mods or cheats.",
+      "translation": "此光盘没有模组或金手指。"
+    },
+    "mods_section_cheats": {
+      "source": "Cheats",
+      "translation": "金手指"
+    },
+    "mods_section_mods": {
+      "source": "Mods",
+      "translation": "模组"
+    },
+    "mods_title": {
+      "source": "Mods & cheats",
+      "translation": "模组与金手指"
+    },
+    "native_boot_failed": {
+      "source": "%1$s\\n\\nSettings → Export logs saves the details, to report it.",
+      "translation": "%1$s\\n\\n可通过“设置 → 导出日志”保存详细信息，以便提交问题报告。"
+    },
+    "native_boot_failed_title": {
+      "source": "This game can\\'t start",
+      "translation": "无法启动此游戏"
+    },
+    "native_fatal_gpu": {
+      "source": "The graphics driver %1$s, which hakuX\\'s Xbox GPU needs.\\n\\nChoose a Turnip driver in Settings → GPU driver and start the game again.",
+      "translation": "hakuX 的 Xbox GPU 需要图形驱动 %1$s。\\n\\n请在“设置 → GPU 驱动”中选择 Turnip 驱动，然后重新启动游戏。"
+    },
+    "native_fatal_gpu_system": {
+      "source": "The graphics driver %1$s, which hakuX\\'s Xbox GPU needs.\\n\\nA system update may bring a newer driver.",
+      "translation": "hakuX 的 Xbox GPU 需要图形驱动 %1$s。\\n\\n系统更新可能会提供更新的驱动。"
+    },
+    "native_fatal_title": {
+      "source": "This game can\\'t run with this GPU driver",
+      "translation": "当前 GPU 驱动无法运行此游戏"
+    },
+    "native_gpu_lost": {
+      "source": "The graphics driver %1$s, so the game can\\'t go on.\\n\\nStart the game again. If it keeps happening, try another GPU driver in Settings → GPU driver.",
+      "translation": "图形驱动 %1$s 已停止工作，游戏无法继续。\\n\\n请重新启动游戏。如果问题持续出现，请在“设置 → GPU 驱动”中尝试其他驱动。"
+    },
+    "native_gpu_lost_system": {
+      "source": "The graphics driver %1$s, so the game can\\'t go on.\\n\\nStart the game again.",
+      "translation": "图形驱动 %1$s 已停止工作，游戏无法继续。\\n\\n请重新启动游戏。"
+    },
+    "native_gpu_lost_title": {
+      "source": "The GPU driver stopped",
+      "translation": "GPU 驱动已停止工作"
+    },
+    "native_incompatible": {
+      "source": "hakuX doesn\\'t support this game yet, so it can\\'t run.",
+      "translation": "hakuX 暂不支持此游戏，因此无法运行。"
+    },
+    "native_incompatible_title": {
+      "source": "This game isn\\'t compatible yet",
+      "translation": "此游戏暂不兼容"
+    },
+    "network_twin_failed": {
+      "source": "The new identity couldn\\'t be saved.",
+      "translation": "无法保存新的主机身份。"
+    },
+    "network_twin_later": {
+      "source": "Not now",
+      "translation": "暂不处理"
+    },
+    "network_twin_message": {
+      "source": "The console at %1$s has this console\\'s identity, the same serial number and network address: the hard disk was copied from one device to the other. Neither can see the other\\'s system link games.\\n\\nGive this console an identity of its own? Its saves stay as they are, and the game starts again.",
+      "translation": "地址为 %1$s 的主机与此主机使用相同的身份、序列号和网络地址，说明硬盘可能已从一台设备复制到另一台。两台主机将无法互相发现对方的系统联机游戏。\n\n要为此主机创建独立身份吗？存档不会改变，游戏将重新启动。"
+    },
+    "network_twin_renew": {
+      "source": "New identity",
+      "translation": "创建新身份"
+    },
+    "network_twin_title": {
+      "source": "Two consoles with one identity",
+      "translation": "两台主机使用了相同身份"
+    },
+    "overlay_editor_fold_desc": {
+      "source": "Fold the editor bar away",
+      "translation": "收起编辑工具栏"
+    },
+    "overlay_editor_hide": {
+      "source": "Hide",
+      "translation": "隐藏"
+    },
+    "overlay_editor_hint": {
+      "source": "Drag a control to move it. Pinch, or drag the corner of the selected one, to resize it.",
+      "translation": "拖动控件可移动位置。捏合缩放，或拖动所选控件的角落，可调整大小。"
+    },
+    "overlay_editor_opacity": {
+      "source": "Opacity %1$d%%",
+      "translation": "不透明度 %1$d%%"
+    },
+    "overlay_editor_opacity_all": {
+      "source": "All: opacity %1$d%%",
+      "translation": "全部：不透明度 %1$d%%"
+    },
+    "overlay_editor_opacity_mixed": {
+      "source": "All: opacity",
+      "translation": "全部：不透明度"
+    },
+    "overlay_editor_pick": {
+      "source": "Tap a control",
+      "translation": "点按一个控件"
+    },
+    "overlay_editor_show": {
+      "source": "Show",
+      "translation": "显示"
+    },
+    "overlay_editor_size_all": {
+      "source": "All %1$d%%",
+      "translation": "全部 %1$d%%"
+    },
+    "overlay_editor_size_mixed": {
+      "source": "All",
+      "translation": "全部"
+    },
+    "overlay_editor_tools": {
+      "source": "▼  Tools",
+      "translation": "▼ 工具"
+    },
+    "overlay_menu_cheats": {
+      "source": "Cheats",
+      "translation": "金手指"
+    },
+    "overlay_menu_edit": {
+      "source": "Edit on-screen controls",
+      "translation": "编辑屏幕控件"
+    },
+    "overlay_menu_exit": {
+      "source": "Exit to library",
+      "translation": "退出并返回游戏库"
+    },
+    "overlay_menu_hide": {
+      "source": "Hide on-screen controls",
+      "translation": "隐藏屏幕控件"
+    },
+    "overlay_menu_show": {
+      "source": "Show on-screen controls",
+      "translation": "显示屏幕控件"
+    },
+    "settings_1080i": {
+      "source": "1080i",
+      "translation": "1080i"
+    },
+    "settings_1080i_desc": {
+      "source": "1920x1080 in the few games that offer it. Much heavier: use resolution scale 1x.",
+      "translation": "仅少数支持的游戏可使用 1920×1080。性能开销较大，建议将分辨率缩放设为 1x。"
+    },
+    "settings_480p": {
+      "source": "480p",
+      "translation": "480p"
+    },
+    "settings_480p_desc": {
+      "source": "Progressive 640x480 instead of interlaced.",
+      "translation": "使用逐行扫描的 640×480，而不是隔行扫描。"
+    },
+    "settings_720p": {
+      "source": "720p",
+      "translation": "720p"
+    },
+    "settings_720p_desc": {
+      "source": "1280x720 in games that offer it. Heavier: consider a lower resolution scale.",
+      "translation": "支持的游戏可使用 1280×720。性能开销较大，可考虑降低分辨率缩放。"
+    },
+    "settings_applies_next_start": {
+      "source": "Takes effect at the next game start.",
+      "translation": "将在下次启动游戏时生效。"
+    },
+    "settings_aspect_16_9": {
+      "source": "16:9 (widescreen games)",
+      "translation": "16:9（宽屏游戏）"
+    },
+    "settings_aspect_auto": {
+      "source": "Auto (the game\\'s own; 16:9 when the console is widescreen)",
+      "translation": "自动（遵循游戏设置；主机设为宽屏时使用 16:9）"
+    },
+    "settings_aspect_stretch": {
+      "source": "Stretch to the screen",
+      "translation": "拉伸以适应屏幕"
+    },
+    "settings_async_shaders": {
+      "source": "Asynchronous shader compilation",
+      "translation": "异步着色器编译"
+    },
+    "settings_async_shaders_desc": {
+      "source": "Compile new shaders in the background instead of stopping the game; what needs them can be missing for a few frames.",
+      "translation": "在后台编译新着色器，避免游戏因此停顿；使用这些着色器的画面可能会有几帧暂时缺失。"
+    },
+    "settings_av_cable": {
+      "source": "Video cable",
+      "translation": "视频线缆"
+    },
+    "settings_av_hdtv": {
+      "source": "HDTV (component): all modes",
+      "translation": "HDTV（分量线）：所有模式"
+    },
+    "settings_av_standard": {
+      "source": "Standard AV (composite): 480i only",
+      "translation": "标准 AV（复合视频）：仅 480i"
+    },
+    "settings_av_svideo": {
+      "source": "S-Video: 480i only",
+      "translation": "S-Video：仅 480i"
+    },
+    "settings_clock": {
+      "source": "Clock",
+      "translation": "时钟"
+    },
+    "settings_clock_desc": {
+      "source": "Games date their saves by it, and some hold events on given days. Takes effect at the next game start; a savestate goes on from the time it was made at.",
+      "translation": "游戏会用此时间记录存档日期，有些游戏还会在指定日期触发事件。更改将在下次启动游戏时生效；载入即时存档时会恢复创建该存档时的时间。"
+    },
+    "settings_clock_phone": {
+      "source": "The phone\\'s time",
+      "translation": "使用手机时间"
+    },
+    "settings_clock_set": {
+      "source": "Set by hand: %1$s on the console now",
+      "translation": "手动设置：当前主机时间为 %1$s"
+    },
+    "settings_clock_set_pick": {
+      "source": "Set by hand…",
+      "translation": "手动设置…"
+    },
+    "settings_console_video_desc": {
+      "source": "The Xbox\\'s own video settings, as its dashboard sets them. Games that support a mode use it: widescreen, progressive and HD resolutions. Takes effect at the next game start.",
+      "translation": "设置 Xbox 自身的视频选项，与系统界面中的设置相同。支持相应模式的游戏可使用宽屏、逐行扫描和高清分辨率。更改将在下次启动游戏时生效。"
+    },
+    "settings_export_logs_desc": {
+      "source": "The logs of this app session and the four before it, as one ZIP in a folder you choose. Attach it when you report a problem.",
+      "translation": "将本次应用会话及之前四次会话的日志打包为一个 ZIP，保存到你选择的文件夹。报告问题时请附上此文件。"
+    },
+    "settings_export_logs_done": {
+      "source": "Logs saved as %1$s",
+      "translation": "日志已保存为 %1$s"
+    },
+    "settings_export_logs_failed": {
+      "source": "Couldn\\'t export the logs",
+      "translation": "无法导出日志"
+    },
+    "settings_export_logs_working": {
+      "source": "Exporting logs…",
+      "translation": "正在导出日志…"
+    },
+    "settings_format_letterbox": {
+      "source": "Letterbox",
+      "translation": "信箱模式"
+    },
+    "settings_format_normal": {
+      "source": "Normal (4:3)",
+      "translation": "普通（4:3）"
+    },
+    "settings_format_widescreen": {
+      "source": "Widescreen (16:9)",
+      "translation": "宽屏（16:9）"
+    },
+    "settings_fxaa": {
+      "source": "FXAA anti-aliasing",
+      "translation": "FXAA 抗锯齿"
+    },
+    "settings_fxaa_desc": {
+      "source": "Smooths jagged edges of each frame. Most useful at low resolution scales: a scale above the screen\\'s already smooths them.",
+      "translation": "平滑每一帧的锯齿。低分辨率缩放时最有用；高于屏幕原生分辨率的缩放本身就能平滑边缘。"
+    },
+    "settings_games_folder_add": {
+      "source": "Add a games folder",
+      "translation": "添加游戏文件夹"
+    },
+    "settings_games_folder_add_desc": {
+      "source": "The library lists the games in every folder here. Tap a folder to change it.",
+      "translation": "游戏库会列出此处所有文件夹中的游戏。点按文件夹即可更改。"
+    },
+    "settings_games_folder_remove": {
+      "source": "Remove from the library",
+      "translation": "从游戏库中移除"
+    },
+    "settings_games_folder_remove_text": {
+      "source": "%1$s leaves the library. Its games stay where they are.",
+      "translation": "%1$s 将从游戏库中移除，但游戏文件仍保留在原位置。"
+    },
+    "settings_games_folder_title": {
+      "source": "Games Folder",
+      "translation": "游戏文件夹"
+    },
+    "settings_gpu_driver_active_version": {
+      "source": "%1$s (%2$s)",
+      "translation": "%1$s（%2$s）"
+    },
+    "settings_gpu_driver_custom": {
+      "source": "Custom driver",
+      "translation": "自定义驱动"
+    },
+    "settings_gpu_driver_not_supported": {
+      "source": "System driver. Other drivers can only be loaded on phones with an Adreno GPU.",
+      "translation": "当前使用系统驱动。只有搭载 Adreno GPU 的手机才能加载其他驱动。"
+    },
+    "settings_gpu_driver_system": {
+      "source": "System driver",
+      "translation": "系统驱动"
+    },
+    "settings_language_auto": {
+      "source": "Auto: the phone\\'s (%1$s)",
+      "translation": "自动：使用手机语言（%1$s）"
+    },
+    "settings_language_desc": {
+      "source": "Games show their text and speech in it where they have it; the others keep their own. Takes effect at the next game start.",
+      "translation": "若游戏支持所选语言，其文本和语音将使用该语言；不支持的游戏仍使用自身语言。更改将在下次启动游戏时生效。"
+    },
+    "settings_migrate": {
+      "source": "Bring over the previous version\\'s data",
+      "translation": "迁移旧版本的数据"
+    },
+    "settings_migrate_desc": {
+      "source": "The first-start screen again: the hard disk, BIOS, games folder and GPU driver of the version before the new core.",
+      "translation": "重新显示首次启动设置：迁移旧核心版本中的硬盘、BIOS、游戏文件夹和 GPU 驱动。"
+    },
+    "settings_network_desc": {
+      "source": "System link: play with the consoles on your network, or over the Internet through XLink Kai. The games find each other as they would on a LAN.",
+      "translation": "系统联机：与同一网络中的主机联机，或通过 XLink Kai 经互联网联机。游戏会像在局域网中一样互相发现。"
+    },
+    "settings_network_kai": {
+      "source": "XLink Kai engine",
+      "translation": "XLink Kai 引擎"
+    },
+    "settings_network_kai_desc": {
+      "source": "The address of the computer running the XLink Kai engine on this network (a PC, a Raspberry Pi); its web page picks the game\\'s arena.",
+      "translation": "输入此网络中运行 XLink Kai 引擎的电脑地址（例如 PC 或 Raspberry Pi）。通过其网页选择游戏房间。"
+    },
+    "settings_network_kai_mode": {
+      "source": "XLink Kai: over the Internet",
+      "translation": "XLink Kai：通过互联网联机"
+    },
+    "settings_network_kai_none": {
+      "source": "Not set",
+      "translation": "未设置"
+    },
+    "settings_network_lan": {
+      "source": "LAN: consoles on this network",
+      "translation": "局域网：同一网络中的主机"
+    },
+    "settings_network_off": {
+      "source": "Off (no cable)",
+      "translation": "关闭（未连接网络线缆）"
+    },
+    "settings_network_peers_desc": {
+      "source": "Consoles the network\\'s broadcasts don\\'t reach (another subnet, a VPN such as ZeroTier or Tailscale), by address.",
+      "translation": "输入广播无法到达的主机地址，例如位于其他子网或通过 ZeroTier、Tailscale 等 VPN 连接的主机。"
+    },
+    "settings_overlay": {
+      "source": "On-screen controls",
+      "translation": "屏幕控件"
+    },
+    "settings_overlay_desc": {
+      "source": "Move and resize each control of the on-screen controller.",
+      "translation": "移动和调整屏幕控制器中各个控件的大小。"
+    },
+    "settings_pal60": {
+      "source": "PAL 60 Hz",
+      "translation": "PAL 60 Hz"
+    },
+    "settings_pal60_desc": {
+      "source": "European games run at 60 Hz instead of 50 Hz where they offer it.",
+      "translation": "对于支持该模式的欧洲游戏，可将刷新率从 50 Hz 改为 60 Hz。"
+    },
+    "settings_prebuild_shaders": {
+      "source": "Build cached shaders before starting",
+      "translation": "启动前预编译缓存着色器"
+    },
+    "settings_prebuild_shaders_desc": {
+      "source": "Build the shaders a game used before, before it starts, so they are ready when it needs them.",
+      "translation": "启动游戏前，预先编译该游戏此前用过的着色器，使其需要时可以直接使用。"
+    },
+    "settings_scale": {
+      "source": "Resolution scale",
+      "translation": "分辨率缩放"
+    },
+    "settings_scale_native": {
+      "source": "1x (native)",
+      "translation": "1x（原生）"
+    },
+    "settings_scale_value": {
+      "source": "%1$dx the game\\'s resolution",
+      "translation": "游戏分辨率的 %1$dx"
+    },
+    "settings_screen_format": {
+      "source": "Screen format",
+      "translation": "屏幕比例"
+    },
+    "settings_section_console": {
+      "source": "Console",
+      "translation": "主机"
+    },
+    "settings_section_console_video": {
+      "source": "Console video",
+      "translation": "主机视频"
+    },
+    "settings_section_controls": {
+      "source": "Controls",
+      "translation": "控制"
+    },
+    "settings_section_display": {
+      "source": "Display",
+      "translation": "显示"
+    },
+    "settings_section_logs": {
+      "source": "Logs",
+      "translation": "日志"
+    },
+    "settings_show_fps": {
+      "source": "Show FPS counter",
+      "translation": "显示 FPS 计数器"
+    },
+    "settings_show_fps_desc": {
+      "source": "Frame rate and frame time overlay while playing.",
+      "translation": "游戏运行时显示帧率和帧时间信息。"
+    },
+    "settings_show_hitches": {
+      "source": "Show stutter monitor",
+      "translation": "显示卡顿监视器"
+    },
+    "settings_show_hitches_desc": {
+      "source": "Debug builds: stutters, hangs and dropped frames with their causes, under the FPS counter.",
+      "translation": "仅调试版本可用：在 FPS 计数器下方显示卡顿、停顿和丢帧及其原因。"
+    },
+    "settings_theme": {
+      "source": "App theme",
+      "translation": "应用主题"
+    },
+    "settings_theme_dark": {
+      "source": "Dark",
+      "translation": "深色"
+    },
+    "settings_theme_light": {
+      "source": "Light",
+      "translation": "浅色"
+    },
+    "settings_theme_system": {
+      "source": "Same as the phone",
+      "translation": "跟随手机系统"
+    },
+    "settings_uncap": {
+      "source": "Uncapped frame rate",
+      "translation": "不限制帧率"
+    },
+    "settings_uncap_desc": {
+      "source": "Present every frame at once instead of waiting for the display.",
+      "translation": "不再等待显示器刷新，而是立即呈现每一帧。"
+    },
+    "settings_update_check_desc": {
+      "source": "hakuX %1$s. Looks for a newer release on GitHub, as the app also does each time it starts.",
+      "translation": "当前 hakuX 版本：%1$s。检查 GitHub 上是否有更新；应用每次启动时也会自动检查。"
+    },
+    "settings_update_checking": {
+      "source": "Checking…",
+      "translation": "正在检查…"
+    },
+    "settings_upscale": {
+      "source": "Upscaling filter",
+      "translation": "图像放大滤镜"
+    },
+    "settings_upscale_bilinear": {
+      "source": "Bilinear",
+      "translation": "双线性"
+    },
+    "settings_upscale_desc": {
+      "source": "For a picture smaller than the screen.",
+      "translation": "用于放大低于屏幕分辨率的画面。"
+    },
+    "settings_upscale_sgsr": {
+      "source": "Snapdragon GSR (sharper edges)",
+      "translation": "Snapdragon GSR（边缘更锐利）"
+    },
+    "setup_disc_body": {
+      "source": "Pick your games folder using SAF. hakuX will scan it for playable images.",
+      "translation": "使用系统文件选择器（SAF）选择游戏文件夹。hakuX 会扫描其中可运行的游戏镜像。"
+    },
+    "setup_disc_title": {
+      "source": "Games Folder",
+      "translation": "游戏文件夹"
+    },
+    "setup_disc_value": {
+      "source": "Games Folder: %1$s",
+      "translation": "游戏文件夹：%1$s"
+    },
+    "setup_finish": {
+      "source": "Finish",
+      "translation": "完成"
+    },
+    "setup_not_set": {
+      "source": "Not set",
+      "translation": "未设置"
+    },
+    "setup_pick_disc": {
+      "source": "Choose Games Folder",
+      "translation": "选择游戏文件夹"
+    },
+    "setup_subtitle": {
+      "source": "Point hakuX at your games. No BIOS or hard disk image needed.",
+      "translation": "指定 hakuX 的游戏目录。无需 BIOS 或硬盘映像即可开始使用。"
+    },
+    "setup_title": {
+      "source": "Welcome to hakuX",
+      "translation": "欢迎使用 hakuX"
+    },
+    "shader_build_progress": {
+      "source": "Building shaders %1$d / %2$d",
+      "translation": "正在编译着色器 %1$d / %2$d"
+    },
+    "state_delete_message": {
+      "source": "The state in slot %1$d will be deleted.",
+      "translation": "将删除存档槽 %1$d 中的即时存档。"
+    },
+    "state_delete_title": {
+      "source": "Delete this state?",
+      "translation": "删除此即时存档？"
+    },
+    "state_empty": {
+      "source": "Empty",
+      "translation": "空"
+    },
+    "state_load_failed_title": {
+      "source": "The state can\\'t be loaded",
+      "translation": "无法载入即时存档"
+    },
+    "state_loading": {
+      "source": "Loading slot %1$d…",
+      "translation": "正在载入存档槽 %1$d…"
+    },
+    "state_none": {
+      "source": "No saved states for this game yet.",
+      "translation": "此游戏尚无即时存档。"
+    },
+    "state_save_failed_title": {
+      "source": "The state couldn\\'t be saved",
+      "translation": "无法保存即时存档"
+    },
+    "state_saved": {
+      "source": "Saved to slot %1$d",
+      "translation": "已保存到存档槽 %1$d"
+    },
+    "state_saving": {
+      "source": "Saving to slot %1$d…",
+      "translation": "正在保存到存档槽 %1$d…"
+    },
+    "state_slot": {
+      "source": "Slot %1$d",
+      "translation": "存档槽 %1$d"
+    },
+    "storage_internal": {
+      "source": "Internal storage",
+      "translation": "内部存储"
+    },
+    "storage_removable": {
+      "source": "Removable storage",
+      "translation": "可移动存储"
+    },
+    "turnip_note_later": {
+      "source": "Not now",
+      "translation": "暂不处理"
+    },
+    "turnip_note_text": {
+      "source": "This phone\\'s own graphics driver is older than Vulkan 1.3, so hakuX runs games through its compatibility path, which can be slower. A Turnip driver (Mesa\\'s driver for Adreno 6xx and newer GPUs) is what hakuX is made for. You can add one in Settings → GPU driver.\\n\\nThis note won\\'t show again.",
+      "translation": "此手机自带的图形驱动版本低于 Vulkan 1.3，因此 hakuX 会通过兼容路径运行游戏，性能可能较差。hakuX 针对 Turnip 驱动进行了优化；Turnip 是 Mesa 为 Adreno 6xx 及更新 GPU 提供的驱动。你可以在“设置 → GPU 驱动”中添加该驱动。\\n\\n此提示不会再次显示。"
+    },
+    "turnip_note_title": {
+      "source": "A Turnip driver is recommended",
+      "translation": "建议使用 Turnip 驱动"
+    },
+    "update_available_icon": {
+      "source": "Update available",
+      "translation": "有可用更新"
+    },
+    "update_check_failed": {
+      "source": "Couldn\\'t check for updates: %1$s",
+      "translation": "检查更新失败：%1$s"
+    },
+    "update_download": {
+      "source": "Download and install",
+      "translation": "下载并安装"
+    },
+    "update_download_failed": {
+      "source": "The update couldn\\'t be downloaded: %1$s",
+      "translation": "无法下载更新：%1$s"
+    },
+    "update_downloading": {
+      "source": "Downloading…",
+      "translation": "正在下载…"
+    },
+    "update_downloading_percent": {
+      "source": "Downloading… %1$d%%",
+      "translation": "正在下载… %1$d%%"
+    },
+    "update_install_failed": {
+      "source": "The update couldn\\'t be installed: %1$s",
+      "translation": "无法安装更新：%1$s"
+    },
+    "update_installed": {
+      "source": "This is hakuX %1$s.",
+      "translation": "当前 hakuX 版本：%1$s。"
+    },
+    "update_later": {
+      "source": "Later",
+      "translation": "稍后"
+    },
+    "update_no_notes": {
+      "source": "No release notes.",
+      "translation": "没有发行说明。"
+    },
+    "update_none": {
+      "source": "hakuX %1$s is the latest version.",
+      "translation": "当前 hakuX %1$s 已是最新版本。"
+    },
+    "update_retry": {
+      "source": "Try again",
+      "translation": "重试"
+    },
+    "update_title": {
+      "source": "hakuX %1$s is available",
+      "translation": "hakuX %1$s 已可用"
+    },
+    "update_toast": {
+      "source": "hakuX %1$s is available",
+      "translation": "hakuX %1$s 已可用"
+    },
+    "xinput_a": {
+      "source": "A",
+      "translation": "A"
+    },
+    "xinput_b": {
+      "source": "B",
+      "translation": "B"
+    },
+    "xinput_black": {
+      "source": "Black",
+      "translation": "黑色按钮"
+    },
+    "xinput_dpad_down": {
+      "source": "D-pad down",
+      "translation": "方向键：下"
+    },
+    "xinput_dpad_left": {
+      "source": "D-pad left",
+      "translation": "方向键：左"
+    },
+    "xinput_dpad_right": {
+      "source": "D-pad right",
+      "translation": "方向键：右"
+    },
+    "xinput_dpad_up": {
+      "source": "D-pad up",
+      "translation": "方向键：上"
+    },
+    "xinput_ls_x": {
+      "source": "Left stick, horizontal",
+      "translation": "左摇杆：水平轴"
+    },
+    "xinput_ls_y": {
+      "source": "Left stick, vertical",
+      "translation": "左摇杆：垂直轴"
+    },
+    "xinput_lt": {
+      "source": "Left trigger",
+      "translation": "左扳机"
+    },
+    "xinput_lthumb": {
+      "source": "Left stick click",
+      "translation": "按下左摇杆"
+    },
+    "xinput_rs_x": {
+      "source": "Right stick, horizontal",
+      "translation": "右摇杆：水平轴"
+    },
+    "xinput_rs_y": {
+      "source": "Right stick, vertical",
+      "translation": "右摇杆：垂直轴"
+    },
+    "xinput_rt": {
+      "source": "Right trigger",
+      "translation": "右扳机"
+    },
+    "xinput_rthumb": {
+      "source": "Right stick click",
+      "translation": "按下右摇杆"
+    },
+    "xinput_start": {
+      "source": "Start",
+      "translation": "Start（开始）"
+    },
+    "xinput_white": {
+      "source": "White",
+      "translation": "白色按钮"
+    },
+    "xinput_x": {
+      "source": "X",
+      "translation": "X"
+    },
+    "xinput_y": {
+      "source": "Y",
+      "translation": "Y"
+    }
+  }
+}
