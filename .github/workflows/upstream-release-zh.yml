@@ -60,6 +60,7 @@ jobs:
     env:
       UPSTREAM_TAG: ${{ needs.check.outputs.upstream_tag }}
       RELEASE_TAG: ${{ needs.check.outputs.release_tag }}
+      # runner 上下文不能用于 job 级 env；使用工作区内的统一临时目录。
       SRC_DIR: ${{ github.workspace }}/.build/hakux-source
       NC_DEPS: ${{ github.workspace }}/.build/hakux-native-deps
       AUTOMATION_DIR: ${{ github.workspace }}/automation
@@ -86,6 +87,9 @@ jobs:
 
       - name: 配置 Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          # Google 已移除旧的 tools 软件包，因此只安装仍受支持的平台工具。
+          packages: platform-tools
 
       - name: 安装 Android SDK 与 NDK
         shell: bash
