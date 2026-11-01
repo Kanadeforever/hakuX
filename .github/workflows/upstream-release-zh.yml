@@ -181,6 +181,7 @@ jobs:
               "SDL3": "SDL3",
               "adrenotools": "adrenotools",
               "nv2a_vsh_cpu": "root/subprojects/nv2a_vsh_cpu",
+              "libslirp": "libslirp",
           }
           found = {}
 
@@ -196,9 +197,19 @@ jobs:
               path, revision = cells[0], cells[1]
               if path in expected.values():
                   name = next(k for k, v in expected.items() if v == path)
-                  found[name] = revision.split(",")[0].strip().strip("`")
+                  # libslirp 在上游文档中标为 4.7.0 (26be815b)。
+                  # 使用括号内的固定提交号，不能自行改用可能不匹配的 4.7.0 标签。
+                  if name == "libslirp":
+                      import re
+                      match = re.search(r"\(([0-9a-fA-F]{7,40})\)", revision)
+                      if not match:
+                          raise SystemExit("无法识别上游 libslirp 固定提交：" + revision)
+                      found[name] = match.group(1)
+                  else:
+                      found[name] = revision.split(",")[0].strip().strip("`")
 
-          missing = sorted(set(expected) - set(found))
+          # 旧版 Release 没有使用 libslirp；只要求当前 README 列出的依赖。
+          missing = sorted((set(expected) - {"libslirp"}) - set(found))
           if missing:
               raise SystemExit(
                   "本次 Release 的构建说明缺少依赖版本：" + ", ".join(missing)
@@ -218,6 +229,7 @@ jobs:
           SDL3_REF: ${{ steps.deps.outputs.SDL3 }}
           ADRENOTOOLS_REF: ${{ steps.deps.outputs.adrenotools }}
           NV2A_VSH_CPU_REF: ${{ steps.deps.outputs.nv2a_vsh_cpu }}
+          LIBSLIRP_REF: ${{ steps.deps.outputs.libslirp }}
         shell: bash
         run: |
           set -euo pipefail
@@ -318,6 +330,44 @@ jobs:
 
           clone_nv2a_or_archive https://github.com/xemu-project/nv2a_vsh_cpu.git \
             "$NV2A_VSH_CPU_REF" "$NC_DEPS/root/subprojects/nv2a_vsh_cpu"
+
+          # 从上游当前 Release 的构建说明获取 libslirp 固定提交。
+          # 这是 v1.3.0 网络/NAT 功能需要的原生源码，不应修改其内容或使用系统库替代。
+          if [[ -n "${LIBSLIRP_REF:-}" ]]; then
+            libslirp_ready=false
+            for upstream_url in \
+              https://qemu.googlesource.com/libslirp \
+              https://gitlab.com/qemu-project/libslirp.git; do
+              rm -rf "$NC_DEPS/libslirp"
+              if ! git clone --quiet --no-checkout "$upstream_url" "$NC_DEPS/libslirp"; then
+                echo "[依赖] 无法克隆 libslirp 镜像：$upstream_url"
+                continue
+              fi
+
+              # 只接受 README 指定的历史提交，避免不同版本网络协议定义不兼容。
+              if git -C "$NC_DEPS/libslirp" checkout --quiet --detach "$LIBSLIRP_REF"; then
+                libslirp_ready=true
+                break
+              fi
+              echo "[依赖] 该镜像未包含指定提交：$LIBSLIRP_REF"
+            done
+
+            if [[ "$libslirp_ready" != true ]]; then
+              echo "::error::未能取得上游文档指定的 libslirp 提交：$LIBSLIRP_REF"
+              exit 1
+            fi
+
+            # 提前检查 CMake 配置时要读取的两个头文件，出现缺失直接报告依赖异常。
+            for expected_file in \
+              "$NC_DEPS/libslirp/src/libslirp-version.h.in" \
+              "$NC_DEPS/libslirp/src/libslirp.h"; do
+              if [[ ! -s "$expected_file" ]]; then
+                echo "::error::libslirp 源码不完整，缺少：$expected_file"
+                exit 1
+              fi
+            done
+            echo "[依赖] libslirp 固定提交：$(git -C "$NC_DEPS/libslirp" rev-parse HEAD)"
+          fi
 
           patch_file="$SRC_DIR/tools/native/adrenotools-kgsl-context-priority.patch"
           if [[ ! -f "$patch_file" ]]; then
